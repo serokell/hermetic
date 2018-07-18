@@ -19,7 +19,7 @@ defmodule YT do
     end
   end
   def avatar(username) do
-    prefix() <> request("api/admin/users/#{username}?fields=avatarUrl")["avatarUrl"]
+    String.slice(prefix(), 0..-2) <> request("api/admin/users/#{username}?fields=avatarUrl")["avatarUrl"]
   end
   def prefix do
     Application.get_env(:hermetic, :yt_prefix)
