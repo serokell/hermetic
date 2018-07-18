@@ -34,6 +34,7 @@ defmodule SlackRtm do
 
   # ignore bot messages
   def handle_event(%{subtype: "bot_message"}, _, state), do: {:ok, state}
+  def handle_event(%{bot_id: _}, _, state), do: {:ok, state}
   def handle_event(message = %{type: "message", text: text}, _slack, [ytcache]) do
     IO.puts (inspect message)
     yt_projs = YTCache.get_projs(ytcache)
@@ -51,7 +52,7 @@ defmodule SlackRtm do
   end
   def handle_event(_, _, state), do: {:ok, state}
 
-  defp issue_attachment(code) do
+  def issue_attachment(code) do
     ytinfo = YT.issue(code)
     unless ytinfo == "Issue not found." do
       [state] = ytinfo."State".value
@@ -66,7 +67,10 @@ defmodule SlackRtm do
         "author_name": ytinfo.reporterFullName.value,
         "author_link": YT.prefix <> "users/" <> ytinfo.reporterName.value,
         "ts":          (String.to_integer ytinfo.created.value) / 1000,
-        "fields":      [%{"title": "State", "value": state, "short": true}]
+        "fields":      [%{"title": "State", "value": state, "short": true},
+                        (if Map.has_key? ytinfo, :Assignees do
+                          assignees = for %{"fullName" => fullName, "value" => username} <- ytinfo."Assignees".value, do: "<#{YT.prefix}users/#{username}|#{fullName}>"
+                          %{"title": "Assigned To", "value": Enum.join(assignees, ","), "short": true} end)]
       }
     end
   end
