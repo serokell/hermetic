@@ -1,8 +1,8 @@
 defmodule YT do
   def request(url) do
-    token = Application.get_env(:sb2, :yt_token)
+    token = Application.get_env(:hermetic, :yt_token)
     headers = ["Authorization": "Bearer #{token}", "Accept": "Application/json"]
-    {:ok, response} = HTTPoison.get("https://issues.serokell.io/" <> url, headers)
+    {:ok, response} = HTTPoison.get(prefix() <> url, headers)
     response.body |> Poison.decode!
   end
   def short_projects do
@@ -13,11 +13,19 @@ defmodule YT do
     if Map.has_key? result, "value" do
       result["value"]
     else
-      Map.new result["field"], fn (thing = %{"name" => nm}) -> {(String.to_atom nm), (Map.new thing, fn {a,b} -> {(String.to_atom a), b} end)} end
+      for (field = %{"name" => name}) <- result["field"], into: %{}, do:
+                  {String.to_atom(name),
+                   (for {propname, content} <- field, into: %{}, do: {String.to_atom(propname), content})}
     end
   end
   def avatar(username) do
-    "https://issues.serokell.io#{request("api/admin/users/#{username}?fields=avatarUrl")["avatarUrl"]}"
+    prefix() <> request("api/admin/users/#{username}?fields=avatarUrl")["avatarUrl"]
+  end
+  def prefix do
+    Application.get_env(:hermetic, :yt_prefix)
+  end
+  def logo do
+    prefix() <> "/static/apple-touch-icon-180x180.png"
   end
 end
 defmodule YTCache do
