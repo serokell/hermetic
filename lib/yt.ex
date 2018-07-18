@@ -25,7 +25,7 @@ defmodule YT do
     Application.get_env(:hermetic, :yt_prefix)
   end
   def logo do
-    prefix() <> "/static/apple-touch-icon-180x180.png"
+    prefix() <> "static/apple-touch-icon-180x180.png"
   end
 end
 defmodule YTCache do
