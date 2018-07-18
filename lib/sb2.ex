@@ -40,7 +40,7 @@ defmodule SlackRtm do
     regex = "(?:^|[^/])\\b((#{Enum.join yt_projs, "|"})-([1-9][0-9]{0,3}))\\b"
     matches = Regex.scan(Regex.compile!(regex), text)
     if length(matches) > 0 do
-      issues = for [_, issue | _] <- matches, do: issue_attachment(issue)
+      issues = for [_, issue | _] <- matches, into: MapSet.new(), do: issue_attachment(issue)
       Slack.Web.Chat.post_message(message.channel, "",
         %{
           attachments: issues |> Poison.encode!,
