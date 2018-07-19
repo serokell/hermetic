@@ -1,37 +1,8 @@
-defmodule Sb2 do
-  use Mix.Config
-
-  @moduledoc """
-  Documentation for Sb2.
-  """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Sb2.hello
-      :world
-
-  """
-  def hello do
-    :world
-  end
-
-  def start do
-    slack_token = Application.get_env(:slack, :api_token)
-    {:ok, ytcache} = YTCache.start_link([])
-    YTCache.update_projs(ytcache)
-    {:ok, _rtm} = Slack.Bot.start_link(SlackRtm, [ytcache], slack_token)
-  end
-end
-
 defmodule SlackRtm do
   use Slack
 
   def handle_connect(slack, state) do
     IO.puts("Connected as #{slack.me.name}")
-    IO.puts(inspect(state))
     {:ok, state}
   end
 
@@ -39,9 +10,9 @@ defmodule SlackRtm do
   def handle_event(%{subtype: "bot_message"}, _, state), do: {:ok, state}
   def handle_event(%{bot_id: _}, _, state), do: {:ok, state}
 
-  def handle_event(message = %{type: "message", text: text}, _slack, [ytcache]) do
+  def handle_event(message = %{type: "message", text: text}, _slack, state) do
     IO.puts(inspect(message))
-    yt_projs = YTCache.get_projs(ytcache)
+    yt_projs = YTCache.get_projs(YTCache)
     regex = "(?:^|[^/])\\b((#{Enum.join(yt_projs, "|")})-([1-9][0-9]{0,3}))\\b"
     matches = Regex.scan(Regex.compile!(regex), text)
 
@@ -57,7 +28,7 @@ defmodule SlackRtm do
       })
     end
 
-    {:ok, [ytcache]}
+    {:ok, state}
   end
 
   def handle_event(_, _, state), do: {:ok, state}
