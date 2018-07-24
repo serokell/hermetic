@@ -18,7 +18,7 @@ defmodule Hermetic.Supervisor do
       {YTCache, name: YTCache},
       %{
         id: Slack.Bot,
-        start: {Slack.Bot, :start_link, [SlackRtm, [], Application.get_env(:slack, :api_token)]}
+        start: {Slack.Bot, :start_link, [SlackRtm, [], Application.get_env(:hermetic, :slack_token)]}
       }
     ]
 
