@@ -4,19 +4,15 @@ defmodule Hermetic.MixProject do
   def project do
     [
       app: :hermetic,
-      version: "0.1.0",
-      deps: [{:slack, "~> 0.14.0"}]
+      deps: [
+        {:config_macro, "~> 0.1.0"},
+        {:slack, "~> 0.14.0"}
+      ],
+      version: "0.1.0"
     ]
   end
 
   def application do
-    [
-      env: [
-        slack_token: "",
-	yt_prefix: "https://issues.serokell.io/",
-        yt_token: "",
-      ],
-      mod: {Hermetic, []}
-    ]
+    [mod: {Hermetic, []}]
   end
 end
