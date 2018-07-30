@@ -66,7 +66,7 @@ defmodule Hermetic.SlackBot do
         author_name: data["reporterFullName"]["value"],
         color: data["State"]["color"]["bg"],
         fields: [
-          %{title: "State", value: data["State"]["value"], short: true},
+          %{title: "State", value: List.first(data["State"]["value"]), short: true},
           if Map.has_key?(data, "Assignees") do
             assignees =
               for %{"fullName" => full_name, "value" => username} <- data["Assignees"]["value"],
