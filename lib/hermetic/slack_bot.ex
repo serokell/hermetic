@@ -1,4 +1,4 @@
-alias Hermetic.{OAuth,YouTrack}
+alias Hermetic.{OAuth, YouTrack}
 
 defmodule Hermetic.SlackBot do
   import ConfigMacro
@@ -21,11 +21,11 @@ defmodule Hermetic.SlackBot do
   end
 
   def respond(message, attachments) do
-    send_message %{
+    send_message(%{
       attachments: attachments,
       channel: message.channel,
       thread_ts: Map.get(message, :thread_ts)
-    }
+    })
   end
 
   def enum_to_regex_group(list) do
@@ -34,13 +34,15 @@ defmodule Hermetic.SlackBot do
 
   def issue_ids(text) do
     project_ids = enum_to_regex_group(YouTrack.ProjectIdCache.get())
+
     ~r/#{project_ids}-[1-9][0-9]{0,3}/
     |> Regex.scan(text, capture: :first)
     |> Enum.map(&List.first/1)
-    |> MapSet.new
+    |> MapSet.new()
   end
 
-  def handle_event(%{bot_id: _}, _, state), do: {:ok, state} # ignore bots
+  # ignore bots
+  def handle_event(%{bot_id: _}, _, state), do: {:ok, state}
 
   def handle_event(message = %{type: "message", text: text}, _, state) do
     unless Enum.empty?(issue_ids = issue_ids(text)) do
@@ -68,14 +70,14 @@ defmodule Hermetic.SlackBot do
           if Map.has_key?(data, "Assignees") do
             assignees =
               for %{"fullName" => full_name, "value" => username} <- data["Assignees"]["value"],
-                do: slack_link(YouTrack.base_url() <> "/users/#{username}", full_name)
+                  do: slack_link(YouTrack.base_url() <> "/users/#{username}", full_name)
 
             %{title: "Assignees", value: Enum.join(assignees, ","), short: true}
           end
         ],
         footer: "YouTrack",
         footer_icon: YouTrack.logo_url(),
-        text: 
+        text:
           if Map.has_key?(data, "description") do
             data["description"]["value"]
           end,

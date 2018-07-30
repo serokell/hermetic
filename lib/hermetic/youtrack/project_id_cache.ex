@@ -14,7 +14,7 @@ defmodule Hermetic.YouTrack.ProjectIdCache do
     Process.send_after(self(), :update, msec)
   end
 
-  def init([]) do 
+  def init([]) do
     {:ok, %{data: [], timer: schedule_update()}}
   end
 

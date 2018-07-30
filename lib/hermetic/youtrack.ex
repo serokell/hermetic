@@ -6,7 +6,7 @@ defmodule Hermetic.YouTrack do
 
   def request(path) do
     headers = [OAuth.bearer(token()), {"accept", "application/json"}]
-    HTTPoison.get!(base_url() <> path, headers).body |> Poison.decode!
+    HTTPoison.get!(base_url() <> path, headers).body |> Poison.decode!()
   end
 
   def avatar_url(username) do
