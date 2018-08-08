@@ -1,4 +1,8 @@
 defmodule Hermetic do
+  @moduledoc """
+    Slack bot that links to YouTrack issues.
+  """
+
   use Application
 
   def start(_, _) do

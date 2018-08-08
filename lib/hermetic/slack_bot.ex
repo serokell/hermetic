@@ -1,6 +1,10 @@
 alias Hermetic.{OAuth, YouTrack}
 
 defmodule Hermetic.SlackBot do
+  @moduledoc """
+    Slack RTM bot with a simplistic API client and processing logic.
+  """
+
   import ConfigMacro
   config :hermetic, [:token]
 
@@ -14,12 +18,22 @@ defmodule Hermetic.SlackBot do
     Slack.Bot.start_link(__MODULE__, [], token(), %{name: __MODULE__})
   end
 
+  @doc """
+    Send given payload to chat.postMessage Slack API endpoint.
+
+    See: <https://api.slack.com/methods/chat.postMessage>
+  """
   def send_message(payload) do
     url = "https://slack.com/api/chat.postMessage"
     headers = [OAuth.bearer(token()), {"content-type", "application/json"}]
     HTTPoison.post!(url, Poison.encode!(payload), headers)
   end
 
+  @doc """
+    Respond with attachments to the given incoming Slack RTM message.
+
+    Will mirror message's channel and thread.
+  """
   def respond(message, attachments) do
     send_message(%{
       attachments: attachments,
@@ -28,10 +42,22 @@ defmodule Hermetic.SlackBot do
     })
   end
 
+  @doc """
+    Turn enumerable into a regular expression group.
+
+    ```
+    "(a|b|c)" = enum_to_regex_group(["a", "b", "c"])
+    ```
+  """
+  @spec enum_to_regex_group(list(String.t())) :: String.t()
   def enum_to_regex_group(list) do
     "(" <> Enum.join(list, "|") <> ")"
   end
 
+  @doc """
+    Match arbitrary text to extract YouTrack IDs of all currently known projects.
+  """
+  @spec issue_ids(String.t()) :: MapSet.t(String.t())
   def issue_ids(text) do
     project_ids = enum_to_regex_group(YouTrack.ProjectIdCache.get())
 
@@ -41,7 +67,7 @@ defmodule Hermetic.SlackBot do
     |> MapSet.new()
   end
 
-  # ignore bots
+  # Ignore other Slack bots:
   def handle_event(%{bot_id: _}, _, state), do: {:ok, state}
 
   def handle_event(message = %{type: "message", text: text}, _, state) do
@@ -54,10 +80,20 @@ defmodule Hermetic.SlackBot do
 
   def handle_event(_, _, state), do: {:ok, state}
 
+  @doc """
+    Format URL and text to form a Slack link.
+
+    See: <https://api.slack.com/docs/message-formatting#linking_to_urls>
+  """
   def slack_link(url, text) do
     "<#{url}|#{text}>"
   end
 
+  @doc """
+    Create a Slack attachment that would describe a YouTrack issue given its ID.
+
+    See: <https://api.slack.com/docs/message-attachments>
+  """
   def issue_attachment(issue_id) do
     if data = YouTrack.issue_data(issue_id) do
       %{
