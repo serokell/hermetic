@@ -20,6 +20,16 @@ defmodule Hermetic.YouTrack do
     HTTPoison.get!(base_url() <> endpoint, headers).body |> Jason.decode!()
   end
 
+  def create_issue(project, summary, description) do
+    headers = [OAuth.bearer(token())]
+    url = base_url() <> "/rest/issue?" <> URI.encode_query([
+      project: String.upcase("bot"),
+      summary: summary,
+      description: description,
+    ])
+    HTTPoison.put!(url, headers)
+  end
+
   @doc """
     Return URL to YouTrack avatar for the given username.
   """
