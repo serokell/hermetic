@@ -12,7 +12,7 @@ defmodule Hermetic.YouTrack do
     Send HTTP GET request to provided YouTrack endpoint.
   """
   def request(endpoint) do
-    headers = [{"authorization", "bearer " <> token()}, {"accept", "application/json"}]
+    headers = [{"authorization", "Bearer " <> token()}, {"accept", "application/json"}]
     HTTPoison.get!(base_url() <> endpoint, headers).body |> Poison.decode!()
   end
 
