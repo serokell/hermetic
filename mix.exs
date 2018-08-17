@@ -6,7 +6,12 @@ defmodule Hermetic.MixProject do
       app: :hermetic,
       deps: [
         {:config_macro, "~> 0.1.0"},
-        {:slack, "~> 0.14.0"}
+	{:cobwebhook, "~> 0.2.0"},
+	{:cowboy, "~> 2.4.0"},
+        {:dialyxir, "~> 0.5", only: :dev, runtime: false},
+        {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
+	{:httpoison, "~> 1.2.0"},
+        {:plug, "~> 1.6.1"}
       ],
       version: "0.1.0"
     ]
