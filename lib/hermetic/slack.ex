@@ -17,7 +17,7 @@ defmodule Hermetic.Slack do
   @base_url "https://slack.com/api"
 
   def request(endpoint, payload) do
-    HTTPoison.post!(@base_url <> endpoint, Poison.encode!(payload), [
+    HTTPoison.post!(@base_url <> endpoint, Jason.encode!(payload), [
       {"authorization", "Bearer " <> token()},
       {"content-type", "application/json"}
     ])
