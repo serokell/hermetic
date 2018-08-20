@@ -7,8 +7,11 @@ defmodule Hermetic do
 
   def start(_, _) do
     children = [
-      {Plug.Adapters.Cowboy2, plug: Hermetic.Pipeline, scheme: :http, options: [port: 8080]},
-      Hermetic.YouTrack.ProjectIdCache
+      {Plug.Adapters.Cowboy2, plug: Hermetic.Router, scheme: :http, options: [port: 8080]},
+      Hermetic.Cache.child_spec(
+        %{function: &Hermetic.YouTrack.project_ids/0},
+        name: Hermetic.YouTrack.ProjectIDs
+      )
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)

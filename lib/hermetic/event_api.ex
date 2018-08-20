@@ -1,6 +1,10 @@
 alias Hermetic.{Attachment, Slack, YouTrack}
 
-defmodule Hermetic.Webhook do
+defmodule Hermetic.EventAPI do
+  @moduledoc """
+    Slack Event API handler.
+  """
+
   import Plug.Conn
 
   def init([]), do: []
@@ -47,7 +51,7 @@ defmodule Hermetic.Webhook do
   end
 
   def call(conn, []) do
-    payload = conn.assigns.payload
+    payload = conn.body_params
 
     case payload["type"] do
       "event_callback" ->

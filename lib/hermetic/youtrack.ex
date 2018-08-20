@@ -1,4 +1,4 @@
-alias Hermetic.YouTrack.ProjectIdCache
+alias Hermetic.{Cache, YouTrack}
 
 defmodule Hermetic.YouTrack do
   @moduledoc """
@@ -12,8 +12,12 @@ defmodule Hermetic.YouTrack do
     Send HTTP GET request to provided YouTrack endpoint.
   """
   def request(endpoint) do
-    headers = [{"authorization", "Bearer " <> token()}, {"accept", "application/json"}]
-    HTTPoison.get!(base_url() <> endpoint, headers).body |> Poison.decode!()
+    headers = [
+      {"authorization", "Bearer " <> token()},
+      {"accept", "application/json"}
+    ]
+
+    HTTPoison.get!(base_url() <> endpoint, headers).body |> Jason.decode!()
   end
 
   @doc """
@@ -38,8 +42,9 @@ defmodule Hermetic.YouTrack do
     for %{"shortName" => id} <- request("/rest/project/all"), do: id
   end
 
+  @spec project_ids :: list(String.t())
   def cached_project_ids do
-    ProjectIdCache.get()
+    Cache.get(YouTrack.ProjectIDs)
   end
 
   @doc """
