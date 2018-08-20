@@ -1,4 +1,4 @@
-alias Hermetic.YouTrack
+alias Hermetic.{YouTrack, Attachment}
 
 defmodule Hermetic.Slash do
   @moduledoc """
@@ -36,6 +36,10 @@ defmodule Hermetic.Slash do
     {assignees, tags, title} = split_tags(rest)
     issue = YouTrack.create_issue(project, title, "")
     # TODO: Update issue with assignees and tags
-    send_resp(conn, 200, "#{inspect issue} created.")
+    conn
+    |> put_resp_header("Content-Type", "application/json")
+    |> send_resp(200, Jason.encode!(%{
+      "attachments": [Attachment.new(issue)],
+    }))
   end
 end
