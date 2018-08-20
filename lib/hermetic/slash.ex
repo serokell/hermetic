@@ -35,10 +35,14 @@ defmodule Hermetic.Slash do
     [project, rest] = split_word(conn.body_params["text"])
     {assignees, tags, title} = split_tags(rest)
     issue = YouTrack.create_issue(project, title, "")
-    # TODO: Update issue with assignees and tags
+    # TODO: Fix tags and assignees command
+    # TODO: Translate assignees from slack to youtrack names
+    YouTrack.add_tags(issue, tags)
+    YouTrack.add_assignees(issue, assignees)
     conn
     |> put_resp_header("Content-Type", "application/json")
     |> send_resp(200, Jason.encode!(%{
+      "response_type": "in_channel",
       "attachments": [Attachment.new(issue)],
     }))
   end

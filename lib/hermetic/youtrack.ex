@@ -31,6 +31,17 @@ defmodule Hermetic.YouTrack do
     HTTPoison.put!(base_url() <> endpoint, "", headers)
   end
 
+  @doc """
+    Send HTTP POST request to provided YouTrack endpoint.
+  """
+  def post!(endpoint, body) do
+    headers = [
+      {"authorization", "Bearer " <> token()},
+    ]
+
+    HTTPoison.post!(base_url() <> endpoint, body, headers)
+  end
+
   def create_issue(project, summary, description) do
     resp = put!("/rest/issue?" <> URI.encode_query([
       project: String.upcase("bot"),
@@ -39,6 +50,27 @@ defmodule Hermetic.YouTrack do
     ]))
     headers = Map.new(resp.headers)
     headers["Location"] |> String.split("/") |> List.last
+  end
+
+  def execute_command(issue, command) do
+    resp = post!("/rest/issue/#{issue}/execute", URI.encode_query([
+      command: command,
+      comment: "[debug] Command sent: " <> command,
+    ]))
+  end
+
+  def add_tags(issue, tags) do
+    command = tags
+              |> Enum.map(fn x -> "tag " <> String.trim(x, "#") end)
+              |> Enum.join(" ")
+    execute_command(issue, command)
+  end
+
+  def add_assignees(issue, assignees) do
+    command = assignees
+              |> Enum.map(fn x -> "add " <> String.trim(x, "@") end)
+              |> Enum.join(" ")
+    execute_command(issue, command)
   end
 
   @doc """
