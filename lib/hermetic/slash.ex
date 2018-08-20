@@ -34,8 +34,8 @@ defmodule Hermetic.Slash do
   def call(conn, []) do
     [project, rest] = split_word(conn.body_params["text"])
     {assignees, tags, title} = split_tags(rest)
-    YouTrack.create_issue(project, title, "")
+    issue = YouTrack.create_issue(project, title, "")
     # TODO: Update issue with assignees and tags
-    send_resp(conn, 200, "#{inspect project} / #{inspect assignees} / #{inspect tags} / #{inspect title}")
+    send_resp(conn, 200, "#{inspect issue} created.")
   end
 end

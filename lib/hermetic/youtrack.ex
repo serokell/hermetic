@@ -32,11 +32,13 @@ defmodule Hermetic.YouTrack do
   end
 
   def create_issue(project, summary, description) do
-    put!("/rest/issue?" <> URI.encode_query([
+    resp = put!("/rest/issue?" <> URI.encode_query([
       project: String.upcase("bot"),
       summary: summary,
       description: description,
     ]))
+    headers = Map.new(resp.headers)
+    headers["Location"] |> String.split("/") |> List.last
   end
 
   @doc """
