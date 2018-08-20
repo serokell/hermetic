@@ -20,14 +20,23 @@ defmodule Hermetic.YouTrack do
     HTTPoison.get!(base_url() <> endpoint, headers).body |> Jason.decode!()
   end
 
+  @doc """
+    Send HTTP PUT request to provided YouTrack endpoint.
+  """
+  def put!(endpoint) do
+    headers = [
+      {"authorization", "Bearer " <> token()},
+    ]
+
+    HTTPoison.put!(base_url() <> endpoint, "", headers)
+  end
+
   def create_issue(project, summary, description) do
-    headers = [OAuth.bearer(token())]
-    url = base_url() <> "/rest/issue?" <> URI.encode_query([
+    put!("/rest/issue?" <> URI.encode_query([
       project: String.upcase("bot"),
       summary: summary,
       description: description,
-    ])
-    HTTPoison.put!(url, headers)
+    ]))
   end
 
   @doc """

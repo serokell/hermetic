@@ -14,5 +14,6 @@ defmodule Hermetic.Router do
   plug(:match)
   plug(:dispatch)
 
+  forward("/yt-add", to: Hermetic.Slash)
   forward("/", to: Hermetic.EventAPI)
 end
