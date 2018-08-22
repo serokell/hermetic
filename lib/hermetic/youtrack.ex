@@ -34,14 +34,18 @@ defmodule Hermetic.YouTrack do
   @doc """
     Send HTTP POST request to provided YouTrack endpoint.
   """
-  def post!(endpoint, body) do
+  def post!(endpoint) do
     headers = [
       {"authorization", "Bearer " <> token()},
     ]
 
-    HTTPoison.post!(base_url() <> endpoint, body, headers)
+    HTTPoison.post!(base_url() <> endpoint, "", headers)
   end
 
+  @doc """
+    Create a new issue and return the issue id
+  """
+  @spec create_issue(String.t(), String.t(), String.t()) :: String.t()
   def create_issue(project, summary, description) do
     resp = put!("/rest/issue?" <> URI.encode_query([
       project: String.upcase("bot"),
@@ -52,13 +56,21 @@ defmodule Hermetic.YouTrack do
     headers["Location"] |> String.split("/") |> List.last
   end
 
+  @doc """
+    Execute YouTrack command on an issue
+  """
+  @spec execute_command(String.t(), String.t()) :: HTTPoison.Response.t()
   def execute_command(issue, command) do
-    resp = post!("/rest/issue/#{issue}/execute", URI.encode_query([
+    post!("/rest/issue/#{issue}/execute?" <> URI.encode_query([
       command: command,
       comment: "[debug] Command sent: " <> command,
     ]))
   end
 
+  @doc """
+    Add tags to an issue, works with or without '#'.
+  """
+  @spec add_tags(String.t(), [String.t()]) :: HTTPoison.Response.t()
   def add_tags(issue, tags) do
     command = tags
               |> Enum.map(fn x -> "tag " <> String.trim(x, "#") end)
@@ -66,6 +78,10 @@ defmodule Hermetic.YouTrack do
     execute_command(issue, command)
   end
 
+  @doc """
+    Add assignees to an issue by login name, works with or without '@'.
+  """
+  @spec add_assignees(String.t(), [String.t()]) :: HTTPoison.Response.t()
   def add_assignees(issue, assignees) do
     command = assignees
               |> Enum.map(fn x -> "add " <> String.trim(x, "@") end)
