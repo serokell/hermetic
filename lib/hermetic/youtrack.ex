@@ -48,7 +48,7 @@ defmodule Hermetic.YouTrack do
   @spec create_issue(String.t(), String.t(), String.t()) :: String.t()
   def create_issue(project, summary, description) do
     resp = put!("/rest/issue?" <> URI.encode_query([
-      project: String.upcase("bot"),
+      project: String.upcase(project),
       summary: summary,
       description: description,
     ]))
@@ -65,28 +65,6 @@ defmodule Hermetic.YouTrack do
       command: command,
       comment: "[debug] Command sent: " <> command,
     ]))
-  end
-
-  @doc """
-    Add tags to an issue, works with or without '#'.
-  """
-  @spec add_tags(String.t(), [String.t()]) :: HTTPoison.Response.t()
-  def add_tags(issue, tags) do
-    command = tags
-              |> Enum.map(fn x -> "tag " <> String.trim(x, "#") end)
-              |> Enum.join(" ")
-    execute_command(issue, command)
-  end
-
-  @doc """
-    Add assignees to an issue by login name, works with or without '@'.
-  """
-  @spec add_assignees(String.t(), [String.t()]) :: HTTPoison.Response.t()
-  def add_assignees(issue, assignees) do
-    command = assignees
-              |> Enum.map(fn x -> "add " <> String.trim(x, "@") end)
-              |> Enum.join(" ")
-    execute_command(issue, command)
   end
 
   @doc """
@@ -121,6 +99,11 @@ defmodule Hermetic.YouTrack do
     for %{"login" => login, "profile" => %{"email" => %{"email" => email}}} <-
       request("/hub/rest/users?$top=999999999&fields=profile/email/email,login")["users"],
       into: %{}, do: {email, login}
+  end
+
+  @spec emails_to_logins :: %{String.t() => String.t()}
+  def emails_to_logins do
+    Cache.get(YouTrack.EmailsToLogins)
   end
 
   @doc """

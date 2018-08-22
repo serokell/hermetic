@@ -9,7 +9,8 @@ defmodule Hermetic.Cache do
 
   def child_spec(args, options \\ []) do
     %{
-      id: __MODULE__,
+      # FIXME: Temporary hack to allow multiple Caches. Yegor will fix this
+      id: options[:name],
       start: {GenServer, :start_link, [__MODULE__, args, options]}
     }
   end

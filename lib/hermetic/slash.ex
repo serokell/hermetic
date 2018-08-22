@@ -72,18 +72,30 @@ defmodule Hermetic.Slash do
       :tag ->
         split_tags(tail, assignees, tags ++ [head])
       :none ->
-        {assignees, tags, string}
+        {assignees, tags, String.trim(string)}
     end
+  end
+
+  @doc """
+  Translate a Slack user id to a YouTrack login name
+  """
+  @spec translate_user(String.t()) :: String.t()
+  def translate_user(slack_user) do
+    YouTrack.emails_to_logins()[Slack.get_email(slack_user)]
   end
 
   def call(conn, []) do
     [project, rest] = split_word(conn.body_params["text"])
     {assignees, tags, title} = split_tags(rest)
     issue = YouTrack.create_issue(project, title, "")
-    # TODO: Translate assignees from slack to youtrack names
+    tag_command = tags
+                  |> Enum.map(fn x -> "tag " <> x end)
+                  |> Enum.join(" ")
+    assignee_command = assignees
+                       |> Enum.map(fn x -> "add " <> translate_user(x) end)
+                       |> Enum.join(" ")
     # TODO: Work out policy for tag creation and visibility
-    YouTrack.add_tags(issue, tags)
-    YouTrack.add_assignees(issue, assignees)
+    YouTrack.execute_command(issue, tag_command <> " " <> assignee_command)
     conn
     |> put_resp_header("Content-Type", "application/json")
     |> send_resp(200, Jason.encode!(%{
