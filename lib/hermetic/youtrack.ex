@@ -111,9 +111,16 @@ defmodule Hermetic.YouTrack do
     for %{"shortName" => id} <- request("/rest/project/all"), do: id
   end
 
-  @spec project_ids :: list(String.t())
+  @spec cached_project_ids :: list(String.t())
   def cached_project_ids do
     Cache.get(YouTrack.ProjectIDs)
+  end
+
+  @spec uncached_emails_to_logins :: %{String.t() => String.t()}
+  def uncached_emails_to_logins do
+    for %{"login" => login, "profile" => %{"email" => %{"email" => email}}} <-
+      request("/hub/rest/users?$top=999999999&fields=profile/email/email,login")["users"],
+      into: %{}, do: {email, login}
   end
 
   @doc """

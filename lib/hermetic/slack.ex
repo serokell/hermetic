@@ -23,6 +23,15 @@ defmodule Hermetic.Slack do
     ])
   end
 
+  @spec get_email(String.t()) :: String.t()
+  def get_email(userid) do
+    resp = HTTPoison.get!(@base_url <> "/users.profile.get?" <> URI.encode_query([
+      token: token(),
+      user: userid,
+    ]), [])
+    Jason.decode!(resp.body)["profile"]["email"]
+  end
+
   @doc """
     Send given payload to chat.postMessage Slack API endpoint.
 
