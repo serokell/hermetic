@@ -63,7 +63,6 @@ defmodule Hermetic.YouTrack do
   def execute_command(issue, command) do
     post!("/rest/issue/#{issue}/execute?" <> URI.encode_query([
       command: command,
-      comment: "[debug] Command sent: " <> command,
     ]))
   end
 

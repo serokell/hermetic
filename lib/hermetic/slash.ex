@@ -11,8 +11,19 @@ defmodule Hermetic.Slash do
 
   def init([]), do: []
 
+  @doc """
+  Return usage string given a /command
+  """
+  @spec usage(String.t()) :: String.t()
+  def usage(command) do
+    case command do
+      "/yt-add" -> "projectid [@assignee] [#tag] Title text"
+      "/yt-cmd" -> "issue-id command"
+    end
+  end
+
   def handle_errors(conn, %{kind: _kind, reason: _reason, stack: _stack}) do
-    send_resp(conn, 200, "Usage: projectid [@assignee] [#tag] Title text")
+    send_resp(conn, 200, "Usage: " <> usage(conn.body_params["command"]))
   end
 
   @doc """
@@ -84,7 +95,27 @@ defmodule Hermetic.Slash do
     YouTrack.emails_to_logins()[Slack.get_email(slack_user)]
   end
 
+  @doc """
+  Translate any Slack users mentioned to YouTrack logins
+  """
+  @spec translate_users(String.t()) :: String.t()
+  def translate_users(command) do
+    Regex.replace(~r/\<\@([^\|]+)\|[^\>]+\>/, command,
+      fn _, x -> translate_user(x) end)
+  end
+
   def call(conn, []) do
+    case conn.body_params["command"] do
+      "/yt-add" -> yt_add(conn)
+      "/yt-cmd" -> yt_cmd(conn)
+    end
+  end
+
+  @doc """
+  Handle /yt-add projectid [@assignee] [#tag] Title text
+  """
+  @spec yt_add(Plug.Conn.t()) :: Plug.Conn.t()
+  def yt_add(conn) do
     [project, rest] = split_word(conn.body_params["text"])
     {assignees, tags, title} = split_tags(rest)
     issue = YouTrack.create_issue(project, title, "")
@@ -102,5 +133,20 @@ defmodule Hermetic.Slash do
       "response_type": "in_channel",
       "attachments": [Attachment.new(issue)],
     }))
+  end
+
+  @doc """
+  Handle /yt-cmd issue-id command
+  """
+  @spec yt_cmd(Plug.Conn.t()) :: Plug.Conn.t()
+  def yt_cmd(conn) do
+    [issue, command] = split_word(conn.body_params["text"])
+    command = translate_users(command)
+    result = YouTrack.execute_command(issue, command).body
+    result = case result do
+      "" -> "Done: #{issue} #{command}"
+      x -> String.replace(x, ~r/\<[^\>]*\>/, "") # Strip XML
+    end
+    send_resp(conn, 200, result)
   end
 end
