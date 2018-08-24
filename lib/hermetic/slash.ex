@@ -89,7 +89,7 @@ defmodule Hermetic.Slash do
     {assignees, tags, title} = split_tags(rest)
     issue = YouTrack.create_issue(project, title, "")
     tag_command = tags
-                  |> Enum.map(fn x -> "tag " <> x end)
+                  |> Enum.map(fn x -> "tag " <> String.replace(x, "_", " ") end)
                   |> Enum.join(" ")
     assignee_command = assignees
                        |> Enum.map(fn x -> "add " <> translate_user(x) end)
