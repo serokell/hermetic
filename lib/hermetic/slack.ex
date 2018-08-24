@@ -1,14 +1,14 @@
 defmodule Hermetic.Slack do
   @moduledoc """
-    Slack API client.
+  Slack API client.
   """
 
   import ConfigMacro
 
   @doc """
-    Slack API token.
-    
-    Get one at: <https://api.slack.com/apps?new_app_token=1>
+  Slack API token.
+
+  Get one at: <https://api.slack.com/apps?new_app_token=1>
   """
   @spec token() :: String.t()
   config :hermetic, [:token]
@@ -33,9 +33,9 @@ defmodule Hermetic.Slack do
   end
 
   @doc """
-    Send given payload to chat.postMessage Slack API endpoint.
+  Send given payload to chat.postMessage Slack API endpoint.
 
-    See: <https://api.slack.com/methods/chat.postMessage>
+  See: <https://api.slack.com/methods/chat.postMessage>
   """
   def send_message(payload) do
     request("/chat.postMessage", payload)

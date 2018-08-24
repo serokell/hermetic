@@ -2,14 +2,14 @@ alias Hermetic.{Cache, YouTrack}
 
 defmodule Hermetic.YouTrack do
   @moduledoc """
-    YouTrack API client.
+  YouTrack API client.
   """
 
   import ConfigMacro
   config :hermetic, [:base_url, :token]
 
   @doc """
-    Send HTTP GET request to provided YouTrack endpoint.
+  Send HTTP GET request to provided YouTrack endpoint.
   """
   def request(endpoint) do
     headers = [
@@ -21,7 +21,7 @@ defmodule Hermetic.YouTrack do
   end
 
   @doc """
-    Send HTTP PUT request to provided YouTrack endpoint.
+  Send HTTP PUT request to provided YouTrack endpoint.
   """
   def put!(endpoint) do
     headers = [
@@ -32,7 +32,7 @@ defmodule Hermetic.YouTrack do
   end
 
   @doc """
-    Send HTTP POST request to provided YouTrack endpoint.
+  Send HTTP POST request to provided YouTrack endpoint.
   """
   def post!(endpoint) do
     headers = [
@@ -43,7 +43,7 @@ defmodule Hermetic.YouTrack do
   end
 
   @doc """
-    Create a new issue and return the issue id
+  Create a new issue and return the issue id
   """
   @spec create_issue(String.t(), String.t(), String.t()) :: String.t()
   def create_issue(project, summary, description) do
@@ -57,7 +57,7 @@ defmodule Hermetic.YouTrack do
   end
 
   @doc """
-    Execute YouTrack command on an issue
+  Execute YouTrack command on an issue
   """
   @spec execute_command(String.t(), String.t()) :: HTTPoison.Response.t()
   def execute_command(issue, command) do
@@ -67,21 +67,21 @@ defmodule Hermetic.YouTrack do
   end
 
   @doc """
-    Return URL to YouTrack avatar for the given username.
+  Return URL to YouTrack avatar for the given username.
   """
   def avatar_url(username) do
     base_url() <> request("/api/admin/users/#{username}?fields=avatarUrl")["avatarUrl"]
   end
 
   @doc """
-    Return URL to YouTrack logo.
+  Return URL to YouTrack logo.
   """
   def logo_url do
     base_url() <> "/static/apple-touch-icon-180x180.png"
   end
 
   @doc """
-    Fetch list of all available YouTrack project IDs.
+  Fetch list of all available YouTrack project IDs.
   """
   @spec project_ids :: list(String.t())
   def project_ids do
@@ -106,7 +106,7 @@ defmodule Hermetic.YouTrack do
   end
 
   @doc """
-    Fetch YouTrack data for an issue, given its ID.
+  Fetch YouTrack data for an issue, given its ID.
   """
   def issue_data(issue_id) do
     if fields = Map.get(request("/rest/issue/#{issue_id}"), "field") do

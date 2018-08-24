@@ -2,7 +2,7 @@ alias Hermetic.{YouTrack, Attachment, Slack}
 
 defmodule Hermetic.Slash do
   @moduledoc """
-    Handles Slack slash commands
+  Handles Slack slash commands
   """
 
   import Plug.Conn
@@ -27,8 +27,8 @@ defmodule Hermetic.Slash do
   end
 
   @doc """
-    Split off the first word based on whitespace.
-    Returns a tuple of the first word and the remainder.
+  Split off the first word based on whitespace.
+  Returns a tuple of the first word and the remainder.
   """
   @spec split_word(String.t()) :: [String.t()]
   def split_word(string) do
@@ -71,8 +71,8 @@ defmodule Hermetic.Slash do
   end
 
   @doc """
-    Split off #tags and @assignees and return a tuple with them and the
-    remainder.
+  Split off #tags and @assignees and return a tuple with them and the
+  remainder.
   """
   @spec split_tags(String.t(), [String.t()], [String.t()]) :: {[String.t()], [String.t()], String.t()}
   def split_tags(string, assignees \\ [], tags \\ []) do

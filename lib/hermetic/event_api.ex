@@ -2,7 +2,7 @@ alias Hermetic.{Attachment, Slack, YouTrack}
 
 defmodule Hermetic.EventAPI do
   @moduledoc """
-    Slack Event API handler.
+  Slack Event API handler.
   """
 
   import Plug.Conn
@@ -10,7 +10,7 @@ defmodule Hermetic.EventAPI do
   def init([]), do: []
 
   @doc """
-    Respond with attachments to the given incoming Slack message, mirroring its channel and thread.
+  Respond with attachments to the given incoming Slack message, mirroring its channel and thread.
   """
   def provide_metadata(event, attachments) do
     %{
@@ -22,11 +22,11 @@ defmodule Hermetic.EventAPI do
   end
 
   @doc """
-    Turn enumerable into a regular expression group.
+  Turn enumerable into a regular expression group.
 
-    ```
-    "(a|b|c)" = enum_to_regex_group(["a", "b", "c"])
-    ```
+  ```
+  "(a|b|c)" = enum_to_regex_group(["a", "b", "c"])
+  ```
   """
   @spec enum_to_regex_group(list(String.t())) :: String.t()
   def enum_to_regex_group(list) do
@@ -34,7 +34,7 @@ defmodule Hermetic.EventAPI do
   end
 
   @doc """
-    Extract YouTrack issue IDs for all known projects from arbitrary text.
+  Extract YouTrack issue IDs for all known projects from arbitrary text.
   """
   @spec extract_issue_ids(String.t()) :: MapSet.t(String.t())
   def extract_issue_ids(text) do

@@ -1,6 +1,6 @@
 defmodule Hermetic do
   @moduledoc """
-    Slack bot that links to YouTrack issues.
+  Slack bot that links to YouTrack issues.
   """
 
   use Application
