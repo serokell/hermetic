@@ -1,5 +1,5 @@
 defmodule Hermetic do
-  @moduledoc """
+  @moduledoc ~S"""
   Slack bot that links to YouTrack issues.
   """
 

@@ -1,7 +1,7 @@
 alias Hermetic.{YouTrack, Attachment, Slack}
 
 defmodule Hermetic.Slash do
-  @moduledoc """
+  @moduledoc ~S"""
   Handles Slack slash commands
   """
 
@@ -11,7 +11,7 @@ defmodule Hermetic.Slash do
 
   def init([]), do: []
 
-  @doc """
+  @doc ~S"""
   Return usage string given a /command.
   """
   @spec usage :: %{String.t() => String.t()}
@@ -27,7 +27,7 @@ defmodule Hermetic.Slash do
     <> usage()[conn.body_params["command"]])
   end
 
-  @doc """
+  @doc ~S"""
   Split off the first word based on whitespace.
   Returns a tuple of the first word and the remainder.
   """
@@ -71,7 +71,7 @@ defmodule Hermetic.Slash do
     end
   end
 
-  @doc """
+  @doc ~S"""
   Split off #tags and @assignees and return a tuple with them and the
   remainder.
   """
@@ -88,7 +88,7 @@ defmodule Hermetic.Slash do
     end
   end
 
-  @doc """
+  @doc ~S"""
   Translate a Slack user id to a YouTrack login name.
   """
   @spec translate_user(String.t()) :: String.t()
@@ -96,7 +96,7 @@ defmodule Hermetic.Slash do
     YouTrack.emails_to_logins()[Slack.user_email(slack_user)]
   end
 
-  @doc """
+  @doc ~S"""
   Translate any Slack users mentioned to YouTrack logins.
   """
   @spec translate_users(String.t()) :: String.t()
@@ -112,7 +112,7 @@ defmodule Hermetic.Slash do
     end
   end
 
-  @doc """
+  @doc ~S"""
   Build a command to tag an issue.
   """
   @spec tag_command(String.t()) :: String.t()
@@ -120,7 +120,7 @@ defmodule Hermetic.Slash do
     "tag " <> String.replace(tag, "_", " ")
   end
 
-  @doc """
+  @doc ~S"""
   Build a command to add assignees to an issue.
   """
   @spec assignee_command(String.t()) :: String.t()
@@ -128,7 +128,7 @@ defmodule Hermetic.Slash do
     "add " <> translate_user(assignee)
   end
 
-  @doc """
+  @doc ~S"""
   Handle `/yt-add projectid [@assignee] [#tag] Title text`.
   """
   @spec yt_add(Plug.Conn.t()) :: Plug.Conn.t()
@@ -148,7 +148,7 @@ defmodule Hermetic.Slash do
     }))
   end
 
-  @doc """
+  @doc ~S"""
   Handle `/yt-cmd issue-id command`.
   """
   @spec yt_cmd(Plug.Conn.t()) :: Plug.Conn.t()

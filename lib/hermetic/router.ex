@@ -1,7 +1,7 @@
 defmodule Hermetic.Router do
   import ConfigMacro
 
-  @doc """
+  @doc ~S"""
   Valid Slack API application signing secrets.
   """
   @spec slack_secrets :: Cobwebhook.secrets()

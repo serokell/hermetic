@@ -1,14 +1,14 @@
 alias Hermetic.{Cache, YouTrack}
 
 defmodule Hermetic.YouTrack do
-  @moduledoc """
+  @moduledoc ~S"""
   YouTrack API client.
   """
 
   import ConfigMacro
   config :hermetic, [:base_url, :token]
 
-  @doc """
+  @doc ~S"""
   Send HTTP GET request to provided YouTrack endpoint.
   """
   def request(method, endpoint, params \\ []) do
@@ -20,7 +20,7 @@ defmodule Hermetic.YouTrack do
     HTTPoison.request!(method, base_url() <> endpoint, "", headers, [params: params])
   end
 
-  @doc """
+  @doc ~S"""
   Create a new issue and return the issue id.
   """
   @spec create_issue(String.t(), String.t(), String.t()) :: String.t()
@@ -33,7 +33,7 @@ defmodule Hermetic.YouTrack do
     Path.basename(Keyword.fetch!(resp.headers, :"Location"))
   end
 
-  @doc """
+  @doc ~S"""
   Execute YouTrack command on an issue.
   """
   @spec execute_command(String.t(), String.t()) :: HTTPoison.Response.t()
@@ -41,7 +41,7 @@ defmodule Hermetic.YouTrack do
     request(:post, "/rest/issue/#{issue}/execute", [command: command])
   end
 
-  @doc """
+  @doc ~S"""
   Return URL to YouTrack avatar for the given username.
   """
   def avatar_url(username) do
@@ -49,14 +49,14 @@ defmodule Hermetic.YouTrack do
     base_url() <> Jason.decode!(resp.body)["avatarUrl"]
   end
 
-  @doc """
+  @doc ~S"""
   Return URL to YouTrack logo.
   """
   def logo_url do
     base_url() <> "/static/apple-touch-icon-180x180.png"
   end
 
-  @doc """
+  @doc ~S"""
   Fetch list of all available YouTrack project IDs.
   """
   @spec project_ids :: list(String.t())
@@ -84,7 +84,7 @@ defmodule Hermetic.YouTrack do
     Cache.get(YouTrack.EmailsToLogins)
   end
 
-  @doc """
+  @doc ~S"""
   Fetch YouTrack data for an issue, given its ID.
   """
   def issue_data(issue_id) do

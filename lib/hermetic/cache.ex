@@ -1,5 +1,5 @@
 defmodule Hermetic.Cache do
-  @moduledoc """
+  @moduledoc ~S"""
   Generic cache for given function that is periodically refreshed.
   """
 
@@ -47,7 +47,7 @@ defmodule Hermetic.Cache do
     GenServer.call(pid, :get)
   end
 
-  @doc """
+  @doc ~S"""
   Schedule a cache refresh in `n` milliseconds.
   """
   def schedule_refresh(pid, n \\ 1) do

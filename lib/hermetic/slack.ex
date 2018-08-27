@@ -1,11 +1,11 @@
 defmodule Hermetic.Slack do
-  @moduledoc """
+  @moduledoc ~S"""
   Slack API client.
   """
 
   import ConfigMacro
 
-  @doc """
+  @doc ~S"""
   Slack API token.
 
   Get one at: <https://api.slack.com/apps?new_app_token=1>
@@ -32,7 +32,7 @@ defmodule Hermetic.Slack do
     Jason.decode!(resp.body)["profile"]["email"]
   end
 
-  @doc """
+  @doc ~S"""
   Send given payload to chat.postMessage Slack API endpoint.
 
   See: <https://api.slack.com/methods/chat.postMessage>
