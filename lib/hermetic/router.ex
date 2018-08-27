@@ -14,7 +14,7 @@ defmodule Hermetic.Router do
   plug(:match)
   plug(:dispatch)
 
-  forward("/yt-cmd", to: Hermetic.Slash)
-  forward("/yt-add", to: Hermetic.Slash)
+  forward("/yt-cmd", to: Hermetic.Slash.Cmd)
+  forward("/yt-add", to: Hermetic.Slash.Add)
   forward("/", to: Hermetic.EventAPI)
 end
