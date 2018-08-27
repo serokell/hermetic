@@ -3,6 +3,8 @@ defmodule Hermetic.Slack do
   Slack API client.
   """
 
+  use HTTPoison.Base
+
   import ConfigMacro
 
   @doc ~S"""
@@ -16,20 +18,33 @@ defmodule Hermetic.Slack do
   # Slack API base URL.
   @base_url "https://slack.com/api"
 
-  def request(endpoint, payload) do
-    HTTPoison.post!(@base_url <> endpoint, Jason.encode!(payload), [
-      {"authorization", "Bearer " <> token()},
-      {"content-type", "application/json"}
-    ])
+  def process_url(url) do
+    @base_url <> url
   end
 
+  def process_request_headers(headers) do
+    headers ++ [
+      {"Authorization", "Bearer " <> token()},
+      {"Content-Type", "application/json"},
+    ]
+  end
+
+  def process_request_body(body) do
+    Jason.encode!(IO.inspect(body))
+  end
+
+  def process_response_body(body) do
+    Jason.decode!(body)
+  end
+
+  @doc ~S"""
+  Get the email address for a user id.
+  """
   @spec user_email(String.t()) :: String.t()
   def user_email(user_id) do
-    resp = HTTPoison.get!(@base_url <> "/users.profile.get?" <> URI.encode_query([
-      token: token(),
+    HTTPoison.get!("/users.profile.get", [], params: [
       user: user_id,
-    ]), [])
-    Jason.decode!(resp.body)["profile"]["email"]
+    ]).body["profile"]["email"]
   end
 
   @doc ~S"""
@@ -38,6 +53,6 @@ defmodule Hermetic.Slack do
   See: <https://api.slack.com/methods/chat.postMessage>
   """
   def send_message(payload) do
-    request("/chat.postMessage", payload)
+    HTTPoison.post!("/chat.postMessage", payload)
   end
 end
