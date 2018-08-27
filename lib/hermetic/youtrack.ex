@@ -11,35 +11,13 @@ defmodule Hermetic.YouTrack do
   @doc """
   Send HTTP GET request to provided YouTrack endpoint.
   """
-  def request(endpoint) do
+  def request(method, endpoint, params \\ []) do
     headers = [
       {"authorization", "Bearer " <> token()},
       {"accept", "application/json"}
     ]
 
-    HTTPoison.get!(base_url() <> endpoint, headers).body |> Jason.decode!()
-  end
-
-  @doc """
-  Send HTTP PUT request to provided YouTrack endpoint.
-  """
-  def put!(endpoint) do
-    headers = [
-      {"authorization", "Bearer " <> token()},
-    ]
-
-    HTTPoison.put!(base_url() <> endpoint, "", headers)
-  end
-
-  @doc """
-  Send HTTP POST request to provided YouTrack endpoint.
-  """
-  def post!(endpoint) do
-    headers = [
-      {"authorization", "Bearer " <> token()},
-    ]
-
-    HTTPoison.post!(base_url() <> endpoint, "", headers)
+    HTTPoison.request!(method, base_url() <> endpoint, "", headers, [params: params])
   end
 
   @doc """
@@ -47,11 +25,11 @@ defmodule Hermetic.YouTrack do
   """
   @spec create_issue(String.t(), String.t(), String.t()) :: String.t()
   def create_issue(project, summary, description) do
-    resp = put!("/rest/issue?" <> URI.encode_query([
+    resp = request(:put, "/rest/issue", [
       project: String.upcase(project),
       summary: summary,
       description: description,
-    ]))
+    ])
     headers = Map.new(resp.headers)
     headers["Location"] |> String.split("/") |> List.last
   end
@@ -61,16 +39,15 @@ defmodule Hermetic.YouTrack do
   """
   @spec execute_command(String.t(), String.t()) :: HTTPoison.Response.t()
   def execute_command(issue, command) do
-    post!("/rest/issue/#{issue}/execute?" <> URI.encode_query([
-      command: command,
-    ]))
+    request(:post, "/rest/issue/#{issue}/execute", [command: command])
   end
 
   @doc """
   Return URL to YouTrack avatar for the given username.
   """
   def avatar_url(username) do
-    base_url() <> request("/api/admin/users/#{username}?fields=avatarUrl")["avatarUrl"]
+    resp = request(:get, "/api/admin/users/#{username}", [fields: "avatarUrl"])
+    base_url() <> Jason.decode!(resp.body)["avatarUrl"]
   end
 
   @doc """
@@ -85,7 +62,8 @@ defmodule Hermetic.YouTrack do
   """
   @spec project_ids :: list(String.t())
   def project_ids do
-    for %{"shortName" => id} <- request("/rest/project/all"), do: id
+    json = Jason.decode!(request(:get, "/rest/project/all").body)
+    for %{"shortName" => id} <- json, do: id
   end
 
   @spec cached_project_ids :: list(String.t())
@@ -93,15 +71,17 @@ defmodule Hermetic.YouTrack do
     Cache.get(YouTrack.ProjectIDs)
   end
 
-  @spec uncached_emails_to_logins :: %{String.t() => String.t()}
-  def uncached_emails_to_logins do
-    for %{"login" => login, "profile" => %{"email" => %{"email" => email}}} <-
-      request("/hub/rest/users?$top=999999999&fields=profile/email/email,login")["users"],
-      into: %{}, do: {email, login}
-  end
-
   @spec emails_to_logins :: %{String.t() => String.t()}
   def emails_to_logins do
+    for %{"login" => login, "profile" => %{"email" => %{"email" => email}}} <-
+      Jason.decode!(request(:get, "/hub/rest/users?" <> URI.encode_query([
+        "$top": 0x7fffffff,
+        fields: "login,profile/email/email",
+      ])).body)["users"], into: %{}, do: {email, login}
+  end
+
+  @spec cached_emails_to_logins :: %{String.t() => String.t()}
+  def cached_emails_to_logins do
     Cache.get(YouTrack.EmailsToLogins)
   end
 
@@ -109,7 +89,8 @@ defmodule Hermetic.YouTrack do
   Fetch YouTrack data for an issue, given its ID.
   """
   def issue_data(issue_id) do
-    if fields = Map.get(request("/rest/issue/#{issue_id}"), "field") do
+    json = Jason.decode!(request(:get, "/rest/issue/#{issue_id}").body)
+    if fields = Map.get(json, "field") do
       for field = %{"name" => name} <- fields, into: %{}, do: {name, field}
     end
   end

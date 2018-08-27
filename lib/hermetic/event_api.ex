@@ -24,9 +24,8 @@ defmodule Hermetic.EventAPI do
   @doc """
   Turn enumerable into a regular expression group.
 
-  ```
-  "(a|b|c)" = enum_to_regex_group(["a", "b", "c"])
-  ```
+      iex> enum_to_regex_group(["a", "b", "c"])
+      "(a|b|c)"
   """
   @spec enum_to_regex_group(list(String.t())) :: String.t()
   def enum_to_regex_group(list) do

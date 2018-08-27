@@ -13,7 +13,7 @@ defmodule Hermetic do
         name: Hermetic.YouTrack.ProjectIDs
       ),
       Hermetic.Cache.child_spec(
-        %{function: &Hermetic.YouTrack.uncached_emails_to_logins/0},
+        %{function: &Hermetic.YouTrack.emails_to_logins/0},
         name: Hermetic.YouTrack.EmailsToLogins
       ),
     ]

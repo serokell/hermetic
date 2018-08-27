@@ -14,16 +14,17 @@ defmodule Hermetic.Slash do
   @doc """
   Return usage string given a /command
   """
-  @spec usage(String.t()) :: String.t()
-  def usage(command) do
-    case command do
-      "/yt-add" -> "projectid [@assignee] [#tag] Title text"
-      "/yt-cmd" -> "issue-id command"
-    end
+  @spec usage :: %{String.t() => String.t()}
+  def usage do
+    %{
+      "/yt-add" => "projectid [@assignee] [#tag] Title text",
+      "/yt-cmd" => "issue-id command",
+    }
   end
 
   def handle_errors(conn, %{kind: _kind, reason: _reason, stack: _stack}) do
-    send_resp(conn, 200, "Usage: " <> usage(conn.body_params["command"]))
+    send_resp(conn, 200, "Wrong syntax. Usage: "
+    <> usage()[conn.body_params["command"]])
   end
 
   @doc """
@@ -92,7 +93,7 @@ defmodule Hermetic.Slash do
   """
   @spec translate_user(String.t()) :: String.t()
   def translate_user(slack_user) do
-    YouTrack.emails_to_logins()[Slack.get_email(slack_user)]
+    YouTrack.emails_to_logins()[Slack.user_email(slack_user)]
   end
 
   @doc """
@@ -145,7 +146,7 @@ defmodule Hermetic.Slash do
     result = YouTrack.execute_command(issue, command).body
     result = case result do
       "" -> "Done: #{issue} #{command}"
-      x -> String.replace(x, ~r/\<[^\>]*\>/, "") # Strip XML
+      x -> String.replace(x, ~r/\<[^\>]*\>/, "") # Strip XML tags
     end
     send_resp(conn, 200, result)
   end
