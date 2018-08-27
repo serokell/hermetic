@@ -30,7 +30,7 @@ defmodule Hermetic.YouTrack do
       summary: summary,
       description: description,
     ])
-    Path.basename(Keyword.fetch!(resp.headers, :"Location"))
+    Path.basename(Map.new(resp.headers)["Location"])
   end
 
   @doc ~S"""

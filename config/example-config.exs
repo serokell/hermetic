@@ -9,4 +9,4 @@ config :hermetic, Hermetic.Slack,
 # YouTrack's base URL and user token
 config :hermetic, Hermetic.YouTrack,
   base_url: "https://youtrack.example.com",
-  token: "perm:d2h5IGRpZCB5b3UgZGVjb2RlIHRoaXM/IHBsZWFzZSBkbyBub3QgZGVjb2RlIGluIHRo"
+  token: "perm:00000000000000000000000000000000000000000000000000000000000000000000"

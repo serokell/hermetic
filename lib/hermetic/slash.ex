@@ -28,81 +28,38 @@ defmodule Hermetic.Slash do
   end
 
   @doc ~S"""
-  Split off the first word based on whitespace.
-  Returns a tuple of the first word and the remainder.
+  Parse one token.
   """
-  @spec split_word(String.t()) :: [String.t()]
-  def split_word(string) do
-    string
-    |> String.trim_leading()
-    |> String.split(~r/\s+|$/, parts: 2)
+  @spec tokenize(String.t()) :: {:text | :user | :tag, String.t()}
+  def tokenize("<@" <> id_name) do
+    [id, _] = String.split(id_name, "|")
+    {:user, id}
   end
 
-  @doc ~S"""
-  Split off the first escaped tag (channel) or user or unescaped tag.
-
-  ## Examples
-
-      iex> split_tag("<@U1234|john> remainder")
-      {:user, "U1234", "remainder"}
-
-      iex> split_tag("<#C1234|channel> remainder")
-      {:tag, "channel", "remainder"}
-
-      iex> split_tag("#tag remainder")
-      {:tag, "tag", "remainder"}
-
-      iex> split_tag("nothing")
-      {:none, "", "nothing"}
-  """
-  @spec split_tag(String.t()) :: {:none | :user | :tag, String.t(), String.t()}
-  def split_tag(string) do
-    re = ~r/^\s*(?:(?:\<\@([^\|]+)\|[^\>]+\>)|(?:\<\#[^\|]+\|([^\>]+)\>)|(?:\#(\S+)))\s*(.*)$/
-    string = String.trim(string)
-    case Regex.run(re, string) do
-      [_, user, "", "", remainder] ->
-        {:user, user, remainder}
-      [_, "", tag, "", remainder] ->
-        {:tag, tag, remainder}
-      [_, "", "", tag, remainder] ->
-        {:tag, tag, remainder}
-      nil ->
-        {:none, "", string}
-    end
+  def tokenize("<#" <> id_name) do
+    [_, name] = String.split(id_name, "|")
+    {:tag, String.trim_trailing(name, ">")}
   end
 
-  @doc ~S"""
-  Split off #tags and @assignees and return a tuple with them and the
-  remainder.
-  """
-  @spec split_tags(String.t(), [String.t()], [String.t()]) :: {[String.t()], [String.t()], String.t()}
-  def split_tags(string, assignees \\ [], tags \\ []) do
-    {type, head, tail} = split_tag(string)
-    case type do
-      :user ->
-        split_tags(tail, assignees ++ [head], tags)
-      :tag ->
-        split_tags(tail, assignees, tags ++ [head])
-      :none ->
-        {assignees, tags, String.trim(string)}
-    end
-  end
+  def tokenize("#" <> tag), do: {:tag, tag}
+  def tokenize(text), do: {:text, text}
+
 
   @doc ~S"""
   Translate a Slack user id to a YouTrack login name.
   """
-  @spec translate_user(String.t()) :: String.t()
-  def translate_user(slack_user) do
-    YouTrack.emails_to_logins()[Slack.user_email(slack_user)]
+  @spec translate_user_id(String.t()) :: String.t()
+  def translate_user_id(slack_id) do
+    YouTrack.emails_to_logins()[Slack.user_email(slack_id)]
   end
 
   @doc ~S"""
   Translate any Slack users mentioned to YouTrack logins.
   """
-  @spec translate_users(String.t()) :: String.t()
-  def translate_users(command) do
+  @spec translate_any_users(String.t()) :: String.t()
+  def translate_any_users(command) do
     Regex.replace(~r/\<\@([^\|]+)\|[^\>]+\>/, command,
-      fn _, slack_id -> translate_user(slack_id) end)
+      fn _, slack_id -> translate_user_id(slack_id) end)
   end
 
   def call(conn, []) do
@@ -113,19 +70,25 @@ defmodule Hermetic.Slash do
   end
 
   @doc ~S"""
-  Build a command to tag an issue.
+  Parse the /yt-add command.
   """
-  @spec tag_command(String.t()) :: String.t()
-  def tag_command(tag) do
-    "tag " <> String.replace(tag, "_", " ")
+  @spec parse_yt_add(String.t()) :: {String.t(), [String.t()], [String.t()], String.t()}
+  def parse_yt_add(command) do
+    command = OptionParser.split(command)
+    [project | command] = command
+    command = Enum.map(command, &tokenize/1)
+    %{:tag => tags, :user => assignees, :text => words} =
+      Enum.group_by(command, fn {key, _} -> key end, fn {_, value} -> value end)
+    assignees = Enum.map(assignees, &translate_user_id/1)
+    {project, tags, assignees, Enum.join(words, " ")}
   end
 
   @doc ~S"""
-  Build a command to add assignees to an issue.
+  Strip all xml tags from a string.
   """
-  @spec assignee_command(String.t()) :: String.t()
-  def assignee_command(assignee) do
-    "add " <> translate_user(assignee)
+  @spec strip_xml_tags(String.t()) :: String.t()
+  def strip_xml_tags(xml) do
+    String.replace(xml, ~r/\<[^\>]*\>/, "")
   end
 
   @doc ~S"""
@@ -133,16 +96,16 @@ defmodule Hermetic.Slash do
   """
   @spec yt_add(Plug.Conn.t()) :: Plug.Conn.t()
   def yt_add(conn) do
-    [project, rest] = split_word(conn.body_params["text"])
-    {assignees, tags, title} = split_tags(rest)
+    {project, tags, assignees, title} = parse_yt_add(conn.body_params["text"])
     issue = YouTrack.create_issue(project, title, "")
     # TODO: Work out policy for tag creation and visibility
-    assignees = Enum.map(assignees, &assignee_command/1)
-    tags = Enum.map(tags, &tag_command/1)
-    YouTrack.execute_command(issue, Enum.join(assignees ++ tags, " "))
+    assignees = Enum.map(assignees, fn assignee -> "add " <> assignee end)
+    tags = Enum.map(tags, fn tag -> "tag " <> tag end)
+    error = YouTrack.execute_command(issue, Enum.join(assignees ++ tags, " ")).body
     conn
     |> put_resp_header("Content-Type", "application/json")
     |> send_resp(200, Jason.encode!(%{
+      "text": strip_xml_tags(error),
       "response_type": "in_channel",
       "attachments": [Attachment.new(issue)],
     }))
@@ -153,12 +116,12 @@ defmodule Hermetic.Slash do
   """
   @spec yt_cmd(Plug.Conn.t()) :: Plug.Conn.t()
   def yt_cmd(conn) do
-    [issue, command] = split_word(conn.body_params["text"])
-    command = translate_users(command)
+    [issue, command] = String.split(conn.body_params["text"], ~r/\s+/, parts: 2)
+    command = translate_any_users(command)
     result = YouTrack.execute_command(issue, command).body
     result = case result do
       "" -> "Done: #{issue} #{command}"
-      x -> String.replace(x, ~r/\<[^\>]*\>/, "") # Strip XML tags
+      error -> strip_xml_tags(error)
     end
     send_resp(conn, 200, result)
   end
