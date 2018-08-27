@@ -24,10 +24,10 @@ defmodule Hermetic.Slack do
   end
 
   @spec user_email(String.t()) :: String.t()
-  def user_email(userid) do
+  def user_email(user_id) do
     resp = HTTPoison.get!(@base_url <> "/users.profile.get?" <> URI.encode_query([
       token: token(),
-      user: userid,
+      user: user_id,
     ]), [])
     Jason.decode!(resp.body)["profile"]["email"]
   end

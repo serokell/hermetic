@@ -21,7 +21,7 @@ defmodule Hermetic.YouTrack do
   end
 
   @doc """
-  Create a new issue and return the issue id
+  Create a new issue and return the issue id.
   """
   @spec create_issue(String.t(), String.t(), String.t()) :: String.t()
   def create_issue(project, summary, description) do
@@ -30,12 +30,11 @@ defmodule Hermetic.YouTrack do
       summary: summary,
       description: description,
     ])
-    headers = Map.new(resp.headers)
-    headers["Location"] |> String.split("/") |> List.last
+    Path.basename(Keyword.fetch!(resp.headers, :"Location"))
   end
 
   @doc """
-  Execute YouTrack command on an issue
+  Execute YouTrack command on an issue.
   """
   @spec execute_command(String.t(), String.t()) :: HTTPoison.Response.t()
   def execute_command(issue, command) do
@@ -75,7 +74,7 @@ defmodule Hermetic.YouTrack do
   def emails_to_logins do
     for %{"login" => login, "profile" => %{"email" => %{"email" => email}}} <-
       Jason.decode!(request(:get, "/hub/rest/users?" <> URI.encode_query([
-        "$top": 0x7fffffff,
+        "$top": 0x7fff_ffff,
         fields: "login,profile/email/email",
       ])).body)["users"], into: %{}, do: {email, login}
   end

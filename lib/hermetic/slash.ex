@@ -12,7 +12,7 @@ defmodule Hermetic.Slash do
   def init([]), do: []
 
   @doc """
-  Return usage string given a /command
+  Return usage string given a /command.
   """
   @spec usage :: %{String.t() => String.t()}
   def usage do
@@ -53,7 +53,7 @@ defmodule Hermetic.Slash do
       {:tag, "tag", "remainder"}
 
       iex> split_tag("nothing")
-      {:none, nil, "nothing"}
+      {:none, "", "nothing"}
   """
   @spec split_tag(String.t()) :: {:none | :user | :tag, String.t(), String.t()}
   def split_tag(string) do
@@ -89,7 +89,7 @@ defmodule Hermetic.Slash do
   end
 
   @doc """
-  Translate a Slack user id to a YouTrack login name
+  Translate a Slack user id to a YouTrack login name.
   """
   @spec translate_user(String.t()) :: String.t()
   def translate_user(slack_user) do
@@ -97,12 +97,12 @@ defmodule Hermetic.Slash do
   end
 
   @doc """
-  Translate any Slack users mentioned to YouTrack logins
+  Translate any Slack users mentioned to YouTrack logins.
   """
   @spec translate_users(String.t()) :: String.t()
   def translate_users(command) do
     Regex.replace(~r/\<\@([^\|]+)\|[^\>]+\>/, command,
-      fn _, x -> translate_user(x) end)
+      fn _, slack_id -> translate_user(slack_id) end)
   end
 
   def call(conn, []) do
@@ -113,21 +113,33 @@ defmodule Hermetic.Slash do
   end
 
   @doc """
-  Handle /yt-add projectid [@assignee] [#tag] Title text
+  Build a command to tag an issue.
+  """
+  @spec tag_command(String.t()) :: String.t()
+  def tag_command(tag) do
+    "tag " <> String.replace(tag, "_", " ")
+  end
+
+  @doc """
+  Build a command to add assignees to an issue.
+  """
+  @spec assignee_command(String.t()) :: String.t()
+  def assignee_command(assignee) do
+    "add " <> translate_user(assignee)
+  end
+
+  @doc """
+  Handle `/yt-add projectid [@assignee] [#tag] Title text`.
   """
   @spec yt_add(Plug.Conn.t()) :: Plug.Conn.t()
   def yt_add(conn) do
     [project, rest] = split_word(conn.body_params["text"])
     {assignees, tags, title} = split_tags(rest)
     issue = YouTrack.create_issue(project, title, "")
-    tag_command = tags
-                  |> Enum.map(fn x -> "tag " <> String.replace(x, "_", " ") end)
-                  |> Enum.join(" ")
-    assignee_command = assignees
-                       |> Enum.map(fn x -> "add " <> translate_user(x) end)
-                       |> Enum.join(" ")
     # TODO: Work out policy for tag creation and visibility
-    YouTrack.execute_command(issue, tag_command <> " " <> assignee_command)
+    assignees = Enum.map(assignees, &assignee_command/1)
+    tags = Enum.map(tags, &tag_command/1)
+    YouTrack.execute_command(issue, Enum.join(assignees ++ tags, " "))
     conn
     |> put_resp_header("Content-Type", "application/json")
     |> send_resp(200, Jason.encode!(%{
@@ -137,7 +149,7 @@ defmodule Hermetic.Slash do
   end
 
   @doc """
-  Handle /yt-cmd issue-id command
+  Handle `/yt-cmd issue-id command`.
   """
   @spec yt_cmd(Plug.Conn.t()) :: Plug.Conn.t()
   def yt_cmd(conn) do
