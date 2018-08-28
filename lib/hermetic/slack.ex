@@ -25,24 +25,21 @@ defmodule Hermetic.Slack do
   def process_request_headers(headers) do
     headers ++ [
       {"Authorization", "Bearer " <> token()},
-      {"Content-Type", "application/json"},
     ]
   end
 
-  def process_request_body(body) do
-    Jason.encode!(IO.inspect(body))
-  end
+  def process_request_body(""), do: ""
+  def process_request_body(body), do: Jason.encode!(body)
 
-  def process_response_body(body) do
-    Jason.decode!(body)
-  end
+  def process_response_body(""), do: ""
+  def process_response_body(body), do: Jason.decode!(body)
 
   @doc ~S"""
   Get the email address for a user id.
   """
   @spec user_email(String.t()) :: String.t()
   def user_email(user_id) do
-    HTTPoison.get!("/users.profile.get", [], params: [
+    get!("/users.profile.get", [], params: [
       user: user_id,
     ]).body["profile"]["email"]
   end
@@ -53,6 +50,6 @@ defmodule Hermetic.Slack do
   See: <https://api.slack.com/methods/chat.postMessage>
   """
   def send_message(payload) do
-    HTTPoison.post!("/chat.postMessage", payload)
+    post!("/chat.postMessage", payload)
   end
 end
