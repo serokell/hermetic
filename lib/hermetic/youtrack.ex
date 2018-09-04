@@ -36,9 +36,12 @@ defmodule Hermetic.YouTrack do
   @doc ~S"""
   Execute YouTrack command on an issue.
   """
-  @spec execute_command(String.t(), String.t()) :: HTTPoison.Response.t()
-  def execute_command(issue, command) do
-    request(:post, "/rest/issue/#{issue}/execute", [command: command])
+  @spec execute_command(String.t(), String.t(), String.t()) :: HTTPoison.Response.t()
+  def execute_command(issue, command, sender) do
+    request(:post, "/rest/issue/#{issue}/execute", [
+      command: command,
+      runAs: sender,
+    ])
   end
 
   @doc ~S"""

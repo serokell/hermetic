@@ -42,24 +42,27 @@ defmodule Hermetic.Slash.Add do
     [project | command] = command
     command = Enum.map(command, &tokenize/1)
     %{:tag => tags, :user => assignees, :text => words} =
-      Enum.group_by(command, fn {key, _} -> key end, fn {_, value} -> value end)
+      Map.merge(%{:tag => [], :user => [], :text => []},
+        Enum.group_by(command, fn {key, _} -> key end, fn {_, value} -> value end))
     assignees = Enum.map(assignees, &translate_user_id/1)
     {project, tags, assignees, Enum.join(words, " ")}
   end
 
   def call(conn, []) do
     {project, tags, assignees, title} = parse_yt_add(conn.body_params["text"])
+    sender = translate_user_id(conn.body_params["user_id"])
     issue = YouTrack.create_issue(project, title, "")
     # TODO: Work out policy for tag creation and visibility
     assignees = Enum.map(assignees, fn assignee -> "add " <> assignee end)
     tags = Enum.map(tags, fn tag -> "tag " <> tag end)
-    error = YouTrack.execute_command(issue, Enum.join(assignees ++ tags, " ")).body
+    command = Enum.join(assignees ++ tags, " ")
+    error = YouTrack.execute_command(issue, command, sender).body
     conn
     |> put_resp_header("Content-Type", "application/json")
     |> send_resp(200, Jason.encode!(%{
-      "text": strip_xml_tags(error),
-      "response_type": "in_channel",
-      "attachments": [Attachment.new(issue)],
+      text: strip_xml_tags(error),
+      response_type: "in_channel",
+      attachments: [Attachment.new(issue)],
     }))
   end
 end

@@ -27,8 +27,9 @@ defmodule Hermetic.Slash.Cmd do
 
   def call(conn, []) do
     [issue, command] = String.split(conn.body_params["text"], ~r/\s+/, parts: 2)
+    sender = translate_user_id(conn.body_params["user_id"])
     command = translate_any_users(command)
-    result = YouTrack.execute_command(issue, command).body
+    result = YouTrack.execute_command(issue, command, sender).body
     result = case result do
       "" -> "Done: #{issue} #{command}"
       error -> strip_xml_tags(error)
