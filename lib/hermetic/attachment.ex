@@ -1,20 +1,20 @@
 alias Hermetic.YouTrack
 
 defmodule Hermetic.Attachment do
-  @doc """
-    Format URL and text to form a Slack link.
+  @doc ~S"""
+  Format URL and text to form a Slack link.
 
-    See: <https://api.slack.com/docs/message-formatting#linking_to_urls>
+  See: <https://api.slack.com/docs/message-formatting#linking_to_urls>
   """
   @spec slack_link(String.t(), String.t()) :: String.t()
   def slack_link(url, text) do
     "<#{url}|#{text}>"
   end
 
-  @doc """
-    Create a Slack attachment that would describe a YouTrack issue given its issue data.
+  @doc ~S"""
+  Create a Slack attachment that would describe a YouTrack issue given its issue data.
 
-    See: <https://api.slack.com/docs/message-attachments>
+  See: <https://api.slack.com/docs/message-attachments>
   """
   def new(issue_id) do
     if issue_data = YouTrack.issue_data(issue_id), do: render(issue_id, issue_data)

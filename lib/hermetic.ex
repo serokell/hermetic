@@ -1,6 +1,6 @@
 defmodule Hermetic do
-  @moduledoc """
-    Slack bot that links to YouTrack issues.
+  @moduledoc ~S"""
+  Slack bot that links to YouTrack issues.
   """
 
   use Application
@@ -11,7 +11,11 @@ defmodule Hermetic do
       Hermetic.Cache.child_spec(
         %{function: &Hermetic.YouTrack.project_ids/0},
         name: Hermetic.YouTrack.ProjectIDs
-      )
+      ),
+      Hermetic.Cache.child_spec(
+        %{function: &Hermetic.YouTrack.emails_to_logins/0},
+        name: Hermetic.YouTrack.EmailsToLogins
+      ),
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)

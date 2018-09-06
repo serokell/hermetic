@@ -1,6 +1,6 @@
 defmodule Hermetic.Cache do
-  @moduledoc """
-    Generic cache for given function that is periodically refreshed.
+  @moduledoc ~S"""
+  Generic cache for given function that is periodically refreshed.
   """
 
   use GenServer
@@ -9,7 +9,8 @@ defmodule Hermetic.Cache do
 
   def child_spec(args, options \\ []) do
     %{
-      id: __MODULE__,
+      # FIXME: Temporary hack to allow multiple Caches. Yegor will fix this
+      id: options[:name],
       start: {GenServer, :start_link, [__MODULE__, args, options]}
     }
   end
@@ -46,8 +47,8 @@ defmodule Hermetic.Cache do
     GenServer.call(pid, :get)
   end
 
-  @doc """
-    Schedule a cache refresh in `n` milliseconds.
+  @doc ~S"""
+  Schedule a cache refresh in `n` milliseconds.
   """
   def schedule_refresh(pid, n \\ 1) do
     Process.send_after(pid, :refresh, n)
