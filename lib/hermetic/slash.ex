@@ -10,7 +10,7 @@ defmodule Hermetic.Slash do
   """
   @spec translate_user_id(String.t()) :: String.t()
   def translate_user_id(slack_id) do
-    YouTrack.emails_to_logins()[Slack.user_email(slack_id)]
+    YouTrack.cached_emails_to_logins()[Slack.user_email(slack_id)]
   end
 
   @doc ~S"""

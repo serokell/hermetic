@@ -1,4 +1,4 @@
-alias Hermetic.{Cache, YouTrack}
+alias Hermetic.YouTrack
 
 defmodule Hermetic.YouTrack do
   @moduledoc ~S"""
@@ -59,32 +59,40 @@ defmodule Hermetic.YouTrack do
     base_url() <> "/static/apple-touch-icon-180x180.png"
   end
 
-  @doc ~S"""
-  Fetch list of all available YouTrack project IDs.
-  """
-  @spec project_ids :: list(String.t())
-  def project_ids do
-    json = Jason.decode!(request(:get, "/rest/project/all").body)
-    for %{"shortName" => id} <- json, do: id
+  defmodule ProjectID do
+    use LambdaCache, name: __MODULE__
+
+    @doc ~S"""
+    Fetch list of all available YouTrack project IDs.
+    """
+    @spec refresh :: list(String.t())
+    def refresh do
+      json = Jason.decode!(YouTrack.request(:get, "/rest/project/all").body)
+      for %{"shortName" => id} <- json, do: id
+    end
   end
 
   @spec cached_project_ids :: list(String.t())
   def cached_project_ids do
-    Cache.get(YouTrack.ProjectIDs)
+    ProjectID.retrieve(ProjectID)
   end
 
-  @spec emails_to_logins :: %{String.t() => String.t()}
-  def emails_to_logins do
-    for %{"login" => login, "profile" => %{"email" => %{"email" => email}}} <-
-      Jason.decode!(request(:get, "/hub/rest/users?" <> URI.encode_query([
-        "$top": 0x7fff_ffff,
-        fields: "login,profile/email/email",
-      ])).body)["users"], into: %{}, do: {email, login}
+  defmodule EmailsToLogins do
+    use LambdaCache, name: __MODULE__
+
+    @spec refresh :: %{String.t() => String.t()}
+    def refresh do
+      for %{"login" => login, "profile" => %{"email" => %{"email" => email}}} <-
+        Jason.decode!(YouTrack.request(:get, "/hub/rest/users?" <> URI.encode_query([
+          "$top": 0x7fff_ffff,
+          fields: "login,profile/email/email",
+        ])).body)["users"], into: %{}, do: {email, login}
+    end
   end
 
   @spec cached_emails_to_logins :: %{String.t() => String.t()}
   def cached_emails_to_logins do
-    Cache.get(YouTrack.EmailsToLogins)
+    EmailsToLogins.retrieve(EmailsToLogins)
   end
 
   @doc ~S"""
