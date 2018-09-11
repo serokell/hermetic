@@ -67,8 +67,8 @@ defmodule Hermetic.YouTrack do
     """
     @spec refresh :: list(String.t())
     def refresh do
-      json = Jason.decode!(YouTrack.request(:get, "/rest/project/all").body)
-      for %{"shortName" => id} <- json, do: id
+      projects = Jason.decode!(YouTrack.request(:get, "/rest/project/all").body)
+      for %{"shortName" => id} <- projects, do: id
     end
   end
 
@@ -101,8 +101,8 @@ defmodule Hermetic.YouTrack do
   Fetch YouTrack data for an issue, given its ID.
   """
   def issue_data(issue_id) do
-    json = Jason.decode!(request(:get, "/rest/issue/#{issue_id}").body)
-    if fields = Map.get(json, "field") do
+    data = Jason.decode!(request(:get, "/rest/issue/#{issue_id}").body)
+    if fields = Map.get(data, "field") do
       for field = %{"name" => name} <- fields, into: %{}, do: {name, field}
     end
   end
