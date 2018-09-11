@@ -8,8 +8,6 @@ defmodule Hermetic.YouTrack do
   import ConfigMacro
   config :hermetic, [:base_url, :token]
 
-  @max_int32 0x7fff_ffff
-
   @doc ~S"""
   Send HTTP GET request to provided YouTrack endpoint.
   """
@@ -81,6 +79,8 @@ defmodule Hermetic.YouTrack do
 
   defmodule EmailsToLogins do
     use LambdaCache, name: __MODULE__
+
+    @max_int32 0x7fff_ffff
 
     @spec refresh :: %{String.t() => String.t()}
     def refresh do
