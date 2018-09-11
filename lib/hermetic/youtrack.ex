@@ -8,6 +8,8 @@ defmodule Hermetic.YouTrack do
   import ConfigMacro
   config :hermetic, [:base_url, :token]
 
+  @max_int32 0x7fff_ffff
+
   @doc ~S"""
   Send HTTP GET request to provided YouTrack endpoint.
   """
@@ -84,7 +86,7 @@ defmodule Hermetic.YouTrack do
     def refresh do
       for %{"login" => login, "profile" => %{"email" => %{"email" => email}}} <-
         Jason.decode!(YouTrack.request(:get, "/hub/rest/users?" <> URI.encode_query([
-          "$top": 0x7fff_ffff,
+          "$top": @max_int32,
           fields: "login,profile/email/email",
         ])).body)["users"], into: %{}, do: {email, login}
     end
