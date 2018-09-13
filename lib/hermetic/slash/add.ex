@@ -53,7 +53,7 @@ defmodule Hermetic.Slash.Add do
     sender = translate_user_id(conn.body_params["user_id"])
     issue = YouTrack.create_issue(project, title, "")
     # TODO: Work out policy for tag creation and visibility
-    assignees = Enum.map(assignees, fn assignee -> "add " <> assignee end)
+    assignees = Enum.map(assignees, fn assignee -> "for " <> assignee end)
     tags = Enum.map(tags, fn tag -> "tag " <> tag end)
     command = Enum.join(assignees ++ tags, " ")
     error = YouTrack.execute_command(issue, command, sender).body
