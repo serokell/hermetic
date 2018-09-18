@@ -39,11 +39,13 @@ defmodule Hermetic.Slash.Add do
       iex> split("Foo foon't \"bar bazn't\"")
       ["Foo", "foon't", "bar bazn't"]
   """
+  @spec split(String.t()) :: [String.t()]
   def split(string) do
     do_split(String.trim_leading(string, " "), "", [], false)
   end
 
   # Any character after a backslash is taken literally
+  @spec do_split(String.t(), String.t(), [String.t()], bool) :: [String.t()]
   defp do_split(<<?\\, c, rest::binary>>, buf, acc, quoting),
     do: do_split(rest, <<buf::binary, c>>, acc, quoting)
 
