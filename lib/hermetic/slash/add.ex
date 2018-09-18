@@ -34,11 +34,42 @@ defmodule Hermetic.Slash.Add do
   def tokenize(text), do: {:text, text}
 
   @doc ~S"""
+  Split a string into whitespace delimited or quoted parts
+
+      iex> split("Foo foon't \"bar bazn't\"")
+      ["Foo", "foon't", "bar bazn't"]
+  """
+  def split(string) do
+    do_split(String.trim_leading(string, " "), "", [], false)
+  end
+
+  # Any character after a backslash is taken literally
+  defp do_split(<<?\\, c, rest::binary>>, buf, acc, quoting),
+    do: do_split(rest, <<buf::binary, c>>, acc, quoting)
+
+  # Toggle quoting on double quote
+  defp do_split(<<?", rest::binary>>, buf, acc, quoting),
+    do: do_split(rest, buf, acc, !quoting)
+
+  # Start a new segment after an unquoted space
+  defp do_split(<<?\s, rest::binary>>, buf, acc, false),
+    do: do_split(String.trim_leading(rest, " "), "", [buf | acc], false)
+
+  # Any other character is simply copied
+  defp do_split(<<c, rest::binary>>, buf, acc, quoting),
+    do: do_split(rest, <<buf::binary, c>>, acc, quoting)
+
+  # Finish string or raise if unclosed
+  defp do_split(<<>>, "", acc, false), do: Enum.reverse(acc)
+  defp do_split(<<>>, buf, acc, false), do: Enum.reverse([buf | acc])
+  defp do_split(<<>>, _, _, _), do: raise "quoted string not closed"
+
+  @doc ~S"""
   Parse the /yt-add command.
   """
   @spec parse_yt_add(String.t()) :: {String.t(), [String.t()], [String.t()], String.t()}
   def parse_yt_add(command) do
-    command = OptionParser.split(command)
+    command = split(command)
     [project | command] = command
     command = Enum.map(command, &tokenize/1)
     %{:tag => tags, :user => assignees, :text => words} =
