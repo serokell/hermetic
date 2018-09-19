@@ -1,4 +1,4 @@
-alias Hermetic.{YouTrack, Attachment}
+alias Hermetic.{Slack, YouTrack, Attachment}
 
 defmodule Hermetic.Slash.Add do
   @moduledoc ~S"""
@@ -45,7 +45,7 @@ defmodule Hermetic.Slash.Add do
   end
 
   # Any character after a backslash is taken literally
-  @spec do_split(String.t(), String.t(), [String.t()], bool) :: [String.t()]
+  @spec do_split(String.t(), String.t(), [String.t()], boolean) :: [String.t()]
   defp do_split(<<?\\, c, rest::binary>>, buf, acc, quoting),
     do: do_split(rest, <<buf::binary, c>>, acc, quoting)
 
@@ -84,12 +84,14 @@ defmodule Hermetic.Slash.Add do
   def call(conn, []) do
     {project, tags, assignees, title} = parse_yt_add(conn.body_params["text"])
     sender = translate_user_id(conn.body_params["user_id"])
-    issue = YouTrack.create_issue(project, title, "")
-    # TODO: Work out policy for tag creation and visibility
+    context = Slack.channel_context(conn.body_params["channel_id"])
+    issue = YouTrack.create_issue(project, title, context)
+
     assignees = Enum.map(assignees, fn assignee -> "for " <> assignee end)
     tags = Enum.map(tags, fn tag -> "tag " <> tag end)
     command = Enum.join(assignees ++ tags, " ")
     error = YouTrack.execute_command(issue, command, sender).body
+
     conn
     |> put_resp_header("Content-Type", "application/json")
     |> send_resp(200, Jason.encode!(%{
