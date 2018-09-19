@@ -47,6 +47,26 @@ defmodule Hermetic.Slack do
   end
 
   @doc ~S"""
+  Return a permalink to the most recent message in a slack channel.
+  """
+  @spec channel_context(String.t()) :: String.t()
+  def channel_context(channel) do
+    %{"ok" => true, "messages" => [%{"ts" => timestamp}]} =
+      get!("/conversations.history", [], params: [
+        channel: channel,
+        limit: 1,
+      ]).body
+
+    %{"ok" => true, "permalink" => permalink} =
+      get!("/chat.getPermalink", [], params: [
+        channel: channel,
+        message_ts: timestamp,
+      ]).body
+
+    permalink
+  end
+
+  @doc ~S"""
   Send given payload to chat.postMessage Slack API endpoint.
 
   See: <https://api.slack.com/methods/chat.postMessage>
