@@ -25,6 +25,8 @@ defmodule Hermetic.Slack do
   def process_request_headers(headers) do
     headers ++ [
       {"Authorization", "Bearer " <> token()},
+      # API doesn't work without Content-Type
+      {"Content-Type", "application/json"},
     ]
   end
 
