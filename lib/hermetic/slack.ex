@@ -37,13 +37,13 @@ defmodule Hermetic.Slack do
   def process_response_body(body), do: Jason.decode!(body)
 
   @doc ~S"""
-  Get the email address for a user id.
+  Get the profile for a user id.
   """
-  @spec user_email(String.t()) :: String.t()
-  def user_email(user_id) do
+  @spec user_profile(String.t()) :: map()
+  def user_profile(user_id) do
     get!("/users.profile.get", [], params: [
       user: user_id,
-    ]).body["profile"]["email"]
+    ]).body["profile"]
   end
 
   @doc ~S"""
