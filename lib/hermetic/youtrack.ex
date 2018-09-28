@@ -17,7 +17,7 @@ defmodule Hermetic.YouTrack do
       {"accept", "application/json"}
     ]
 
-    HTTPoison.request!(method, base_url() <> endpoint, "", headers, [params: params])
+    HTTPoison.request!(method, base_url() <> endpoint, "", headers, params: params)
   end
 
   @doc ~S"""
@@ -25,11 +25,13 @@ defmodule Hermetic.YouTrack do
   """
   @spec create_issue(String.t(), String.t(), String.t()) :: String.t()
   def create_issue(project, summary, description) do
-    resp = request(:put, "/rest/issue", [
-      project: String.upcase(project),
-      summary: summary,
-      description: description,
-    ])
+    resp =
+      request(:put, "/rest/issue",
+        project: String.upcase(project),
+        summary: summary,
+        description: description
+      )
+
     Path.basename(Map.new(resp.headers)["Location"])
   end
 
@@ -38,17 +40,17 @@ defmodule Hermetic.YouTrack do
   """
   @spec execute_command(String.t(), String.t(), String.t()) :: HTTPoison.Response.t()
   def execute_command(issue, command, sender) do
-    request(:post, "/rest/issue/#{issue}/execute", [
+    request(:post, "/rest/issue/#{issue}/execute",
       command: command,
-      runAs: sender,
-    ])
+      runAs: sender
+    )
   end
 
   @doc ~S"""
   Return URL to YouTrack avatar for the given username.
   """
   def avatar_url(username) do
-    resp = request(:get, "/api/admin/users/#{username}", [fields: "avatarUrl"])
+    resp = request(:get, "/api/admin/users/#{username}", fields: "avatarUrl")
     base_url() <> Jason.decode!(resp.body)["avatarUrl"]
   end
 
@@ -80,15 +82,23 @@ defmodule Hermetic.YouTrack do
   defmodule EmailsToLogins do
     use LambdaCache, name: __MODULE__
 
-    @max_int32 0x7fff_ffff
+    @max_int32 0x7FFF_FFFF
 
     @spec refresh :: %{String.t() => String.t()}
     def refresh do
       for %{"login" => login, "profile" => %{"email" => %{"email" => email}}} <-
-        Jason.decode!(YouTrack.request(:get, "/hub/rest/users?" <> URI.encode_query([
-          "$top": @max_int32,
-          fields: "login,profile/email/email",
-        ])).body)["users"], into: %{}, do: {email, login}
+            Jason.decode!(
+              YouTrack.request(
+                :get,
+                "/hub/rest/users?" <>
+                  URI.encode_query(
+                    "$top": @max_int32,
+                    fields: "login,profile/email/email"
+                  )
+              ).body
+            )["users"],
+          into: %{},
+          do: {email, login}
     end
   end
 
@@ -102,6 +112,7 @@ defmodule Hermetic.YouTrack do
   """
   def issue_data(issue_id) do
     data = Jason.decode!(request(:get, "/rest/issue/#{issue_id}").body)
+
     if fields = Map.get(data, "field") do
       for field = %{"name" => name} <- fields, into: %{}, do: {name, field}
     end

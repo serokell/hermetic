@@ -42,7 +42,7 @@ defmodule Hermetic.EventAPI do
     ~r/#{project_ids}-[1-9][0-9]{0,3}/
     |> Regex.scan(text, capture: :first)
     |> Enum.map(&List.first/1)
-    |> Enum.uniq
+    |> Enum.uniq()
   end
 
   def this_or_nothing?(map, key, value) do
@@ -61,7 +61,8 @@ defmodule Hermetic.EventAPI do
             extract_issue_ids(event["text"])
             |> Enum.map(&Attachment.new/1)
             |> Enum.reject(&is_nil/1)
-            |> Enum.take(3) # Don't spam more than 3 attachments
+            # Don't spam more than 3 attachments
+            |> Enum.take(3)
 
           unless Enum.empty?(attachments), do: provide_metadata(event, attachments)
         end

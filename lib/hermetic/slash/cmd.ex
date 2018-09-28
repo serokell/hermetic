@@ -21,8 +21,9 @@ defmodule Hermetic.Slash.Cmd do
   """
   @spec translate_any_users(String.t()) :: String.t()
   def translate_any_users(command) do
-    Regex.replace(~r/\<\@([^\|]+)\|[^\>]+\>/, command,
-      fn _, slack_id -> translate_user_id(slack_id) end)
+    Regex.replace(~r/\<\@([^\|]+)\|[^\>]+\>/, command, fn _, slack_id ->
+      translate_user_id(slack_id)
+    end)
   end
 
   def call(conn, []) do
@@ -30,10 +31,13 @@ defmodule Hermetic.Slash.Cmd do
     sender = translate_user_id(conn.body_params["user_id"])
     command = translate_any_users(command)
     result = YouTrack.execute_command(issue, command, sender).body
-    result = case result do
-      "" -> "Done: #{issue} #{command}"
-      error -> strip_xml_tags(error)
-    end
+
+    result =
+      case result do
+        "" -> "Done: #{issue} #{command}"
+        error -> strip_xml_tags(error)
+      end
+
     send_resp(conn, 200, result)
   end
 end

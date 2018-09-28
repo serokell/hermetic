@@ -23,11 +23,12 @@ defmodule Hermetic.Slack do
   end
 
   def process_request_headers(headers) do
-    headers ++ [
-      {"Authorization", "Bearer " <> token()},
-      # API doesn't work without Content-Type
-      {"Content-Type", "application/json"},
-    ]
+    headers ++
+      [
+        {"Authorization", "Bearer " <> token()},
+        # API doesn't work without Content-Type
+        {"Content-Type", "application/json"}
+      ]
   end
 
   def process_request_body(""), do: ""
@@ -41,9 +42,11 @@ defmodule Hermetic.Slack do
   """
   @spec user_profile(String.t()) :: map()
   def user_profile(user_id) do
-    get!("/users.profile.get", [], params: [
-      user: user_id,
-    ]).body["profile"]
+    get!("/users.profile.get", [],
+      params: [
+        user: user_id
+      ]
+    ).body["profile"]
   end
 
   @doc ~S"""
@@ -52,16 +55,20 @@ defmodule Hermetic.Slack do
   @spec channel_context(String.t()) :: String.t()
   def channel_context(channel) do
     %{"ok" => true, "messages" => [%{"ts" => timestamp}]} =
-      get!("/conversations.history", [], params: [
-        channel: channel,
-        limit: 1,
-      ]).body
+      get!("/conversations.history", [],
+        params: [
+          channel: channel,
+          limit: 1
+        ]
+      ).body
 
     %{"ok" => true, "permalink" => permalink} =
-      get!("/chat.getPermalink", [], params: [
-        channel: channel,
-        message_ts: timestamp,
-      ]).body
+      get!("/chat.getPermalink", [],
+        params: [
+          channel: channel,
+          message_ts: timestamp
+        ]
+      ).body
 
     permalink
   end
