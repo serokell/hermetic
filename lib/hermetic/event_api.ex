@@ -5,6 +5,14 @@ defmodule Hermetic.EventAPI do
   Slack Event API handler.
   """
 
+  import ConfigMacro
+
+  @doc ~S"""
+  Maximum number of attachments per message.
+  """
+  @spec max_attachments() :: pos_integer()
+  config :hermetic, max_attachments: 3
+
   import Plug.Conn
 
   def init([]), do: []
@@ -61,8 +69,7 @@ defmodule Hermetic.EventAPI do
             extract_issue_ids(event["text"])
             |> Enum.map(&Attachment.new/1)
             |> Enum.reject(&is_nil/1)
-            # Don't spam more than 3 attachments
-            |> Enum.take(3)
+            |> Enum.take(max_attachments())
 
           unless Enum.empty?(attachments), do: provide_metadata(event, attachments)
         end
