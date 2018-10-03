@@ -3,6 +3,12 @@ use Mix.Config
 config :hermetic, Hermetic,
   cowboy_options: [port: 59468]
 
+config :hermetic, Hermetic.EventAPI,
+  max_attachments: 3
+
+config :hermetic, Hermetic.Attachment,
+  max_text_size: 280
+
 config :hermetic, Hermetic.Router,
   slack_secrets: ["00000000000000000000000000000000"]
 

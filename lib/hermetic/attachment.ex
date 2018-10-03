@@ -1,6 +1,18 @@
 alias Hermetic.YouTrack
 
 defmodule Hermetic.Attachment do
+  @moduledoc ~S"""
+  Create a Slack attachment that would describe a YouTrack issue given its issue data.
+  """
+
+  import ConfigMacro
+
+  @doc ~S"""
+  Maximum size of attachment description.
+  """
+  @spec max_text_size() :: pos_integer()
+  config :hermetic, max_text_size: 280
+
   @doc ~S"""
   Format URL and text to form a Slack link.
 
@@ -20,6 +32,22 @@ defmodule Hermetic.Attachment do
     if issue_data = YouTrack.issue_data(issue_id), do: render(issue_id, issue_data)
   end
 
+  @doc ~S"""
+  Cut off long strings to a limited number of characters and an ellipsis.
+  """
+  @spec cutoff(String.t(), pos_integer()) :: String.t()
+  def cutoff(text, amount) do
+    if String.length(text) > amount do
+      String.slice(text, 0, amount - 3) <> "..."
+    else
+      text
+    end
+  end
+
+  @doc ~S"""
+  Build the Slack attachment map from the YouTrack issue data map
+  """
+  @spec render(String.t(), map()) :: map()
   def render(issue_id, issue_data) do
     %{
       author_icon: YouTrack.avatar_url(issue_data["reporterName"]["value"]),
@@ -41,7 +69,7 @@ defmodule Hermetic.Attachment do
       footer_icon: YouTrack.logo_url(),
       text:
         if Map.has_key?(issue_data, "description") do
-          issue_data["description"]["value"]
+          cutoff(issue_data["description"]["value"], max_text_size())
         end,
       title: "[#{issue_id}] #{issue_data["summary"]["value"]}",
       title_link: YouTrack.base_url() <> "/issue/" <> issue_id,

@@ -64,21 +64,45 @@ defmodule Hermetic.Slash.Add do
   # Finish string or raise if unclosed
   defp do_split(<<>>, "", acc, false), do: Enum.reverse(acc)
   defp do_split(<<>>, buf, acc, false), do: Enum.reverse([buf | acc])
-  defp do_split(<<>>, _, _, _), do: raise "quoted string not closed"
+  defp do_split(<<>>, _, _, _), do: raise("quoted string not closed")
+
+  @doc ~S"""
+  Translate a part of the title to YouTrack terms
+  """
+  @spec translate_title({:text | :user | :tag, String.t()}) :: String.t()
+  def translate_title({:tag, tag}), do: "##{tag}"
+  def translate_title({:text, text}), do: text
+
+  def translate_title({:user, slack_id}) do
+    Slack.user_profile(slack_id)["real_name"]
+  end
 
   @doc ~S"""
   Parse the /yt-add command.
   """
   @spec parse_yt_add(String.t()) :: {String.t(), [String.t()], [String.t()], String.t()}
   def parse_yt_add(command) do
-    command = split(command)
-    [project | command] = command
-    command = Enum.map(command, &tokenize/1)
-    %{:tag => tags, :user => assignees, :text => words} =
-      Map.merge(%{:tag => [], :user => [], :text => []},
-        Enum.group_by(command, fn {key, _} -> key end, fn {_, value} -> value end))
+    [project | command] = split(command)
+
+    {command, title} =
+      command
+      |> Enum.map(&tokenize/1)
+      |> Enum.split_while(fn {key, _} -> key != :text end)
+
+    %{:tag => tags, :user => assignees} =
+      Map.merge(
+        %{:tag => [], :user => []},
+        Enum.group_by(command, fn {key, _} -> key end, fn {_, value} -> value end)
+      )
+
     assignees = Enum.map(assignees, &translate_user_id/1)
-    {project, tags, assignees, Enum.join(words, " ")}
+
+    title =
+      title
+      |> Enum.map(&translate_title/1)
+      |> Enum.join(" ")
+
+    {project, tags, assignees, title}
   end
 
   def call(conn, []) do
@@ -94,10 +118,13 @@ defmodule Hermetic.Slash.Add do
 
     conn
     |> put_resp_header("Content-Type", "application/json")
-    |> send_resp(200, Jason.encode!(%{
-      text: strip_xml_tags(error),
-      response_type: "in_channel",
-      attachments: [Attachment.new(issue)],
-    }))
+    |> send_resp(
+      200,
+      Jason.encode!(%{
+        text: strip_xml_tags(error),
+        response_type: "in_channel",
+        attachments: [Attachment.new(issue)]
+      })
+    )
   end
 end

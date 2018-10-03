@@ -5,6 +5,14 @@ defmodule Hermetic.EventAPI do
   Slack Event API handler.
   """
 
+  import ConfigMacro
+
+  @doc ~S"""
+  Maximum number of attachments per message.
+  """
+  @spec max_attachments() :: pos_integer()
+  config :hermetic, max_attachments: 3
+
   import Plug.Conn
 
   def init([]), do: []
@@ -35,14 +43,14 @@ defmodule Hermetic.EventAPI do
   @doc ~S"""
   Extract YouTrack issue IDs for all known projects from arbitrary text.
   """
-  @spec extract_issue_ids(String.t()) :: MapSet.t(String.t())
+  @spec extract_issue_ids(String.t()) :: [String.t()]
   def extract_issue_ids(text) do
     project_ids = YouTrack.cached_project_ids() |> enum_to_regex_group()
 
     ~r/#{project_ids}-[1-9][0-9]{0,3}/
     |> Regex.scan(text, capture: :first)
     |> Enum.map(&List.first/1)
-    |> MapSet.new()
+    |> Enum.uniq()
   end
 
   def this_or_nothing?(map, key, value) do
@@ -61,6 +69,7 @@ defmodule Hermetic.EventAPI do
             extract_issue_ids(event["text"])
             |> Enum.map(&Attachment.new/1)
             |> Enum.reject(&is_nil/1)
+            |> Enum.take(max_attachments())
 
           unless Enum.empty?(attachments), do: provide_metadata(event, attachments)
         end
