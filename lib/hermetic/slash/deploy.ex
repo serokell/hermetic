@@ -5,6 +5,15 @@ defmodule Hermetic.Slash.Deploy do
   Handle `/deploy user/repo[@ref] [to target]` command.
   """
 
+  import ConfigMacro
+
+  @doc ~S"""
+  Default git ref and default deployment environment for `/deploy`.
+  """
+  @spec default_ref() :: String.t()
+  @spec default_env() :: String.t()
+  config :hermetic, default_ref: "master", default_env: "production"
+
   import Hermetic.Slash
   import Plug.Conn
 
@@ -28,12 +37,12 @@ defmodule Hermetic.Slash.Deploy do
       if String.contains?(repo, "@") do
         String.split(repo, "@")
       else
-        [repo, "production"]
+        [repo, default_ref()]
       end
 
     env =
       case command do
-        [] -> "production"
+        [] -> default_env()
         ["to", env] -> env
       end
 

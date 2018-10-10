@@ -3,6 +3,10 @@ use Mix.Config
 config :hermetic, Hermetic,
   cowboy_options: [port: 59468]
 
+config :hermetic, Hermetic.Slash.Deploy,
+  default_ref: "master",
+  default_env: "production"
+
 config :hermetic, Hermetic.EventAPI,
   max_attachments: 3
 
