@@ -3,10 +3,6 @@ use Mix.Config
 config :hermetic, Hermetic,
   cowboy_options: [port: 59468]
 
-config :hermetic, Hermetic.Slash.Deploy,
-  default_ref: "master",
-  default_env: "production"
-
 config :hermetic, Hermetic.EventAPI,
   max_attachments: 3
 
@@ -18,9 +14,6 @@ config :hermetic, Hermetic.Router,
 
 config :hermetic, Hermetic.Slack,
   token: "xoxa-0000000000-000000000000-000000000000-00000000000000000000000000000000"
-
-config :hermetic, Hermetic.Github,
-  token: "0000000000000000000000000000000000000000"
 
 # YouTrack's base URL and user token
 config :hermetic, Hermetic.YouTrack,
