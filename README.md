@@ -22,7 +22,11 @@ checking. The last one takes a while on the first run.
 Copy `config/example-config.exs` to `config/config.exs` and fill in the secrets
 (Slack, Youtrack and Github API tokens).
 
-TODO: add some info about how to add it to the Slack server?
+[Set up a Slack app](https://api.slack.com/slack-apps) and create two slash
+commands that point to `https://yourdomain.tld/yt-add` and
+`https://yourdomain.tld/yt-cmd`. Make sure to enable user escaping so Hermetic
+can translate Slack users (by email) to YouTrack users. You can use `nginx` for
+example to handle `https` and routing.
 
 ### Using the bot
 
