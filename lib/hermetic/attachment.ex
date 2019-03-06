@@ -55,7 +55,9 @@ defmodule Hermetic.Attachment do
       author_name: issue_data["reporterFullName"]["value"],
       color: issue_data["State"]["color"]["bg"],
       fields: [
-        %{title: "State", value: List.first(issue_data["State"]["value"]), short: true},
+        if Map.has_key?(issue_data, "State") do
+          %{title: "State", value: List.first(issue_data["State"]["value"]), short: true}
+        end,
         if Map.has_key?(issue_data, "Assignees") do
           assignees =
             for %{"fullName" => full_name, "value" => username} <-
