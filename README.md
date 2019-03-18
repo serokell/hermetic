@@ -40,7 +40,7 @@ g. `AD-150`) with a link to this issue.
 
 ## Issue tracker
 
-We use [YouTrack](https://issues.serokell.io/issues/OPS) as our issue tracker.
+We use [YouTrack](https://issues.serokell.io/issues/INT) as our issue tracker.
 You can login using your GitHub account to leave a comment or create a new issue.
 
 ## About Serokell
