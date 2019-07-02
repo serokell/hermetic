@@ -71,7 +71,9 @@ defmodule Hermetic.EventAPI do
             |> Enum.reject(&is_nil/1)
             |> Enum.take(max_attachments())
 
-          unless Enum.empty?(attachments), do: provide_metadata(event, attachments)
+          unless Enum.empty?(attachments) do
+            Task.start(fn -> provide_metadata(event, attachments) end)
+          end
         end
 
         send_resp(conn, 200, "")

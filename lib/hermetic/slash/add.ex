@@ -72,10 +72,12 @@ defmodule Hermetic.Slash.Add do
     {project, tags, assignees, title}
   end
 
-  def call(conn, []) do
-    {project, tags, assignees, title} = parse_yt_add(conn.body_params["text"])
-    sender = translate_user_id(conn.body_params["user_id"])
-    context = Slack.channel_context(conn.body_params["channel_id"])
+  @doc ~S"""
+  Respond to a command using its response_url.
+  """
+  def respond({project, tags, assignees, title}, params) do
+    sender = translate_user_id(params["user_id"])
+    context = Slack.channel_context(params["channel_id"])
     issue = YouTrack.create_issue(project, title, context)
 
     assignees = Enum.map(assignees, fn assignee -> "for " <> assignee end)
@@ -83,15 +85,22 @@ defmodule Hermetic.Slash.Add do
     command = Enum.join(assignees ++ tags, " ")
     error = YouTrack.execute_command(issue, command, sender).body
 
-    conn
-    |> put_resp_header("Content-Type", "application/json")
-    |> send_resp(
-      200,
+    HTTPoison.post!(
+      params["response_url"],
       Jason.encode!(%{
-        text: strip_xml_tags(error),
+        text: Jason.decode!(error)["value"],
         response_type: "in_channel",
         attachments: [Attachment.new(issue)]
       })
     )
+  end
+
+  def call(conn, []) do
+    parsed = parse_yt_add(conn.body_params["text"])
+    Task.start(fn -> respond(parsed, conn.body_params) end)
+
+    conn
+    |> put_resp_header("Content-Type", "application/json")
+    |> send_resp(200, Jason.encode!(%{response_type: "in_channel"}))
   end
 end

@@ -1,4 +1,4 @@
-alias Hermetic.{YouTrack}
+alias Hermetic.{Attachment, YouTrack}
 
 defmodule Hermetic.Slash.Cmd do
   @moduledoc ~S"""
@@ -26,18 +26,35 @@ defmodule Hermetic.Slash.Cmd do
     end)
   end
 
-  def call(conn, []) do
-    [issue, command] = String.split(conn.body_params["text"], ~r/\s+/, parts: 2)
-    sender = translate_user_id(conn.body_params["user_id"])
+  @doc ~S"""
+  Respond to a command using its response_url.
+  """
+  def respond([issue, command], params) do
+    sender = translate_user_id(params["user_id"])
     command = translate_any_users(command)
     result = YouTrack.execute_command(issue, command, sender).body
 
-    result =
+    response =
       case result do
-        "" -> "Done: #{issue} #{command}"
-        error -> strip_xml_tags(error)
+        "" ->
+          %{
+            text: "Done: #{issue} #{command}",
+            response_type: "in_channel",
+            attachments: [Attachment.new(issue)]
+          }
+
+        error ->
+          %{
+            text: Jason.decode!(error)["value"]
+          }
       end
 
-    send_resp(conn, 200, result)
+    HTTPoison.post!(params["response_url"], Jason.encode!(response))
+  end
+
+  def call(conn, []) do
+    parsed = String.split(conn.body_params["text"], ~r/\s+/, parts: 2)
+    Task.start(fn -> respond(parsed, conn.body_params) end)
+    send_resp(conn, 200, "")
   end
 end
