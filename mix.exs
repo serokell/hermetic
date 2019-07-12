@@ -10,7 +10,7 @@ defmodule Hermetic.MixProject do
         {:cobwebhook, "~> 0.4.0"},
         {:cowboy, "~> 2.4.0"},
         {:dialyxir, "~> 0.5", only: :dev, runtime: false},
-        {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
+        {:ex_doc, "~> 0.19", only: :dev, runtime: false},
         {:httpoison, "~> 1.2.0"},
         {:jason, "~> 1.1"},
         {:plug, "~> 1.6.1"}
