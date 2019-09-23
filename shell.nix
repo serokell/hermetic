@@ -1,6 +1,8 @@
-with import <nixpkgs> {};
+{ sources ? import nix/sources.nix }:
 
-stdenvNoCC.mkDerivation {
+let inherit (import sources.nixpkgs { }) elixir stdenvNoCC rebar rebar3;
+
+in stdenvNoCC.mkDerivation {
   name = "hermetic";
   buildInputs = [ elixir ];
 

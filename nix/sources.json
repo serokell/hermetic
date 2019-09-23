@@ -1,0 +1,45 @@
+{
+    "gitignore": {
+        "branch": "master",
+        "description": "Nix function for filtering local git sources",
+        "homepage": "",
+        "owner": "hercules-ci",
+        "repo": "gitignore",
+        "rev": "f9e996052b5af4032fe6150bba4a6fe4f7b9d698",
+        "sha256": "0jrh5ghisaqdd0vldbywags20m2cxpkbbk5jjjmwaw0gr8nhsafv",
+        "type": "tarball",
+        "url": "https://github.com/hercules-ci/gitignore/archive/f9e996052b5af4032fe6150bba4a6fe4f7b9d698.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "mix-to-nix": {
+        "sha256": "0ix2g06c444mvmnfvf6jdzhd44vs0b0965xhny6lxxl2rm7cim1d",
+        "type": "tarball",
+        "url": "https://gitlab.com/transumption/mix-to-nix/-/archive/a983c799d8762c91ce3375d03982e04b37835194/mix-to-nix-a983c799d8762c91ce3375d03982e04b37835194.tar.gz",
+        "url_template": "https://gitlab.com/transumption/mix-to-nix/-/archive/<version>/mix-to-nix-<version>.tar.gz",
+        "version": "a983c799d8762c91ce3375d03982e04b37835194"
+    },
+    "niv": {
+        "branch": "master",
+        "description": "Easy dependency management for Nix projects",
+        "homepage": "https://github.com/nmattia/niv",
+        "owner": "nmattia",
+        "repo": "niv",
+        "rev": "efce82e4ba77a84835f9febefe3b2fe52a8c7ede",
+        "sha256": "19ah2il98hjb2c8d4p1ph3nxrkzi4hl9vbw21snza5w7x4jhx4jk",
+        "type": "tarball",
+        "url": "https://github.com/nmattia/niv/archive/efce82e4ba77a84835f9febefe3b2fe52a8c7ede.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nixpkgs": {
+        "branch": "new-repin",
+        "description": "Nixpkgs/NixOS branches that track the Nixpkgs/NixOS channels",
+        "homepage": null,
+        "owner": "serokell",
+        "repo": "nixpkgs",
+        "rev": "a3abe3d20be04489db3ccbc01cb5bddc604966ac",
+        "sha256": "0j71v44cxbhajxb7s32lpvjr01x2ypcz0dvfzh9hdk3wsim962pd",
+        "type": "tarball",
+        "url": "https://github.com/serokell/nixpkgs/archive/a3abe3d20be04489db3ccbc01cb5bddc604966ac.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    }
+}
