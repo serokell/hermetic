@@ -29,4 +29,10 @@ in (mixToNix {
     cp -Rv _build/prod/lib/* _build/test/lib/
     cp -Rv _build/prod/lib/* deps/
   '';
+
+  buildPhase = ''
+    export MIX_ENV=prod
+    mkdir -p $out
+    mix do compile --warnings-as-errors, release --path $out
+  '';
 })

@@ -15,7 +15,20 @@ defmodule Hermetic.MixProject do
         {:jason, "~> 1.1"},
         {:plug, "~> 1.6.1"}
       ],
-      version: "0.1.0"
+      version: "0.1.0",
+      releases: releases()
+    ]
+  end
+
+  defp releases do
+    [
+      hermetic: [
+        include_executables_for: [:unix],
+        applications: [
+          runtime_tools: :permanent,
+          hermetic: :permanent,
+        ]
+      ]
     ]
   end
 
