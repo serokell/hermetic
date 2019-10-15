@@ -1,17 +1,4 @@
-use Mix.Config
-
-config :hermetic, Hermetic,
-  cowboy_options: [port: 59468]
-
-config :hermetic, Hermetic.Slash.Deploy,
-  default_ref: "master",
-  default_env: "production"
-
-config :hermetic, Hermetic.EventAPI,
-  max_attachments: 3
-
-config :hermetic, Hermetic.Attachment,
-  max_text_size: 280
+import Config
 
 config :hermetic, Hermetic.Router,
   slack_secrets: ["00000000000000000000000000000000"]
@@ -22,7 +9,5 @@ config :hermetic, Hermetic.Slack,
 config :hermetic, Hermetic.Github,
   token: "0000000000000000000000000000000000000000"
 
-# YouTrack's base URL and user token
 config :hermetic, Hermetic.YouTrack,
-  base_url: "https://youtrack.example.com",
-  token: "perm:00000000000000000000000000000000000000000000000000000000000000000000"
+  token: "perm:0000000000000000000000000000000000000000000000000000000000000000"

@@ -1,5 +1,5 @@
-/config/config.exs
 _build
 /deps
 /doc
 result
+/config/dev.secret.exs
