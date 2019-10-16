@@ -1,4 +1,6 @@
 import Config
+# https://github.com/elixir-lang/elixir/issues/9338
+File.chmod(System.get_env("RELEASE_SYS_CONFIG") <> ".config", 0o644)
 
 config :hermetic, Hermetic,
   cowboy_options: [port: String.to_integer(System.get_env("HERMETIC_PORT"))]

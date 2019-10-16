@@ -29,6 +29,7 @@ in (mixToNix {
     cp -Rv _build/prod/lib/* _build/test/lib/
     cp -Rv _build/prod/lib/* deps/
   '';
+  MIX_ENV = "prod";
 
   buildPhase = ''
     export MIX_ENV=prod

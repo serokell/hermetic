@@ -5,7 +5,6 @@ defmodule Hermetic.MixProject do
     [
       app: :hermetic,
       deps: [
-        {:lambda_cache, github: "serokell/lambda_cache"},
         {:config_macro, "~> 0.1.0"},
         {:cobwebhook, "~> 0.4.0"},
         {:cowboy, "~> 2.4.0"},
