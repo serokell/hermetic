@@ -31,15 +31,15 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
-        "branch": "new-repin",
-        "description": "Nixpkgs/NixOS branches that track the Nixpkgs/NixOS channels",
-        "homepage": null,
+        "branch": "master",
+        "description": "Pinned Nixpkgs tree (master follows nixos-unstable-small, only tags have stable history)",
+        "homepage": "",
         "owner": "serokell",
         "repo": "nixpkgs",
-        "rev": "a3abe3d20be04489db3ccbc01cb5bddc604966ac",
-        "sha256": "0j71v44cxbhajxb7s32lpvjr01x2ypcz0dvfzh9hdk3wsim962pd",
+        "rev": "1872e058b2f70ed62760482c1a67d0fb63950763",
+        "sha256": "0xibq3ij551gji5yxvx2ibj3vbr3qk04ijpclg8bvyjl2ypixmhw",
         "type": "tarball",
-        "url": "https://github.com/serokell/nixpkgs/archive/a3abe3d20be04489db3ccbc01cb5bddc604966ac.tar.gz",
+        "url": "https://github.com/serokell/nixpkgs/archive/1872e058b2f70ed62760482c1a67d0fb63950763.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }

@@ -19,9 +19,8 @@ let
 in (mixToNix {
   src = gitignoreSource ./.;
   overlay = final: lib.mapAttrs (lib.const fixHexDep);
-}).overrideAttrs (super: {
-  name = "hermetic";
-
+})
+.overrideAttrs (super: {
   doCheck = false;
 
   postConfigure = ''
@@ -32,7 +31,6 @@ in (mixToNix {
   MIX_ENV = "prod";
 
   buildPhase = ''
-    export MIX_ENV=prod
     mkdir -p $out
     mix do compile --warnings-as-errors, release --path $out
   '';
