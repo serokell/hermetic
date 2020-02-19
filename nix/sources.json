@@ -12,11 +12,16 @@
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "mix-to-nix": {
-        "sha256": "0ix2g06c444mvmnfvf6jdzhd44vs0b0965xhny6lxxl2rm7cim1d",
+        "branch": "transumption",
+        "description": "Generate sandbox buildable Nix expression from Mix lock file",
+        "homepage": "https://gitlab.com/transumption/mix-to-nix",
+        "owner": "serokell",
+        "repo": "mix-to-nix",
+        "rev": "b5f210e5c6f489c820608327a046727bf86f467b",
+        "sha256": "0lkmcm433h1yd1ipfvynbsd95a9rpbh11xpail0ssxmkn7bg6c3d",
         "type": "tarball",
-        "url": "https://gitlab.com/transumption/mix-to-nix/-/archive/a983c799d8762c91ce3375d03982e04b37835194/mix-to-nix-a983c799d8762c91ce3375d03982e04b37835194.tar.gz",
-        "url_template": "https://gitlab.com/transumption/mix-to-nix/-/archive/<version>/mix-to-nix-<version>.tar.gz",
-        "version": "a983c799d8762c91ce3375d03982e04b37835194"
+        "url": "https://github.com/serokell/mix-to-nix/archive/b5f210e5c6f489c820608327a046727bf86f467b.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
         "branch": "master",
