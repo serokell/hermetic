@@ -14,7 +14,9 @@
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
-  outputs = { self, nixpkgs, gitignore, mix-to-nix, flake-utils, ... }: flake-utils.lib.eachDefaultSystem (system:
+  outputs = { self, nixpkgs, gitignore, mix-to-nix, flake-utils, ... }: ({
+    nixosModules.hermetic = import ./module.nix;
+  } // flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; };
 
@@ -28,5 +30,5 @@
         type = "app";
         program = "${self.defaultPackage."${system}"}/bin/hermetic";
       };
-    });
+    }));
 }
