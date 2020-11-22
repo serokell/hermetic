@@ -1,8 +1,13 @@
-{ sources ? import nix/sources.nix }:
-
-let
-  inherit (import sources.nixpkgs { }) callPackage;
-  inherit (callPackage sources.mix-to-nix { }) mixToNix;
-  inherit (callPackage sources.gitignore { }) gitignoreSource;
-
-in callPackage ./derivation.nix { inherit mixToNix gitignoreSource; }
+(import
+  (
+    let
+      lock = builtins.fromJSON (builtins.readFile ./flake.lock);
+    in
+    fetchTarball {
+      url = "https://github.com/edolstra/flake-compat/archive/${lock.nodes.flake-compat.locked.rev}.tar.gz";
+      sha256 = lock.nodes.flake-compat.locked.narHash;
+    }
+  )
+  {
+    src = ./.;
+  }).defaultNix
