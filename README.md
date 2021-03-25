@@ -28,6 +28,18 @@ commands that point to `https://yourdomain.tld/yt-add` and
 can translate Slack users (by email) to YouTrack users. You can use `nginx` for
 example to handle `https` and routing.
 
+#### Oauth scopes
+
+The app needs the following OAuth scopes to function:
+
+* channels:history
+* chat:write
+* commands
+* groups:history
+* im:history
+* mpim:history
+* users.profile:read
+
 ### Using the bot
 
 Run those slash commands in a chat with Hermetic:
