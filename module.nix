@@ -31,6 +31,11 @@ in
         type = types.nullOr types.str;
       };
 
+      youtrack = mkOption {
+        default = "https://issues.serokell.io";
+        type = types.str;
+      };
+
       port = mkOption {
         default = 59468;
         type = types.int;
@@ -58,6 +63,7 @@ in
         RELEASE_NODE = "hermetic@127.0.0.1";
         RELEASE_DISTRIBUTION = "name";
         HERMETIC_PORT = "${toString cfg.port}";
+        HERMETIC_YT_URL = cfg.youtrack;
       };
 
       script = ''

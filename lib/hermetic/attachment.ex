@@ -58,10 +58,10 @@ defmodule Hermetic.Attachment do
         if Map.has_key?(issue_data, "State") do
           %{title: "State", value: List.first(issue_data["State"]["value"]), short: true}
         end,
-        if Map.has_key?(issue_data, "Assignees") do
+        if Map.has_key?(issue_data, "Assignees") or Map.has_key?(issue_data, "Assignee") do
           assignees =
             for %{"fullName" => full_name, "value" => username} <-
-                  issue_data["Assignees"]["value"],
+                  (issue_data["Assignees"] || issue_data["Assignee"])["value"],
                 do: slack_link(YouTrack.base_url() <> "/users/#{username}", full_name)
 
           %{title: "Assignees", value: Enum.join(assignees, ","), short: true}

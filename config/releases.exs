@@ -20,5 +20,5 @@ config :hermetic, Hermetic.Github,
 
 # YouTrack's base URL and user token
 config :hermetic, Hermetic.YouTrack,
-  base_url: "https://issues.serokell.io",
+  base_url: System.get_env("HERMETIC_YT_URL"),
   token: System.get_env("HERMETIC_YT_TOKEN")
