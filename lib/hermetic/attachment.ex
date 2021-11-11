@@ -70,7 +70,7 @@ defmodule Hermetic.Attachment do
       footer: "YouTrack",
       footer_icon: YouTrack.logo_url(),
       text:
-        if Map.has_key?(issue_data, "description") do
+        if Map.has_key?(issue_data, "description") and not is_nil(issue_data["description"]) do
           cutoff(issue_data["description"], max_text_size())
         end,
       title: "[#{issue_data["idReadable"]}] #{issue_data["summary"]}",
