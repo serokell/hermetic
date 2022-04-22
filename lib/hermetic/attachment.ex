@@ -29,7 +29,7 @@ defmodule Hermetic.Attachment do
   See: <https://api.slack.com/docs/message-attachments>
   """
   def new(issue_id) do
-    if issue_data = YouTrack.issue_data(issue_id), do: render(issue_id, issue_data)
+    if issue_data = YouTrack.issue_data(issue_id), do: render(issue_data)
   end
 
   @doc ~S"""
@@ -47,21 +47,21 @@ defmodule Hermetic.Attachment do
   @doc ~S"""
   Build the Slack attachment map from the YouTrack issue data map
   """
-  @spec render(String.t(), map()) :: map()
-  def render(issue_id, issue_data) do
+  @spec render(map()) :: map()
+  def render(issue_data) do
     %{
-      author_icon: YouTrack.avatar_url(issue_data["reporterName"]["value"]),
-      author_link: YouTrack.base_url() <> "/users/" <> issue_data["reporterName"]["value"],
-      author_name: issue_data["reporterFullName"]["value"],
-      color: issue_data["State"]["color"]["bg"],
+      author_icon: YouTrack.base_url() <> issue_data["reporter"]["avatarUrl"],
+      author_link: YouTrack.base_url() <> "/users/" <> issue_data["reporter"]["login"],
+      author_name: issue_data["reporter"]["fullName"],
+      color: issue_data["State"]["value"]["color"]["background"],
       fields: [
         if Map.has_key?(issue_data, "State") do
-          %{title: "State", value: List.first(issue_data["State"]["value"]), short: true}
+          %{title: "State", value: issue_data["State"]["value"]["name"], short: true}
         end,
-        if Map.has_key?(issue_data, "Assignees") do
+        if Map.has_key?(issue_data, "Assignees") or Map.has_key?(issue_data, "Assignee") do
           assignees =
-            for %{"fullName" => full_name, "value" => username} <-
-                  issue_data["Assignees"]["value"],
+            for %{"fullName" => full_name, "login" => username} <-
+                  (issue_data["Assignees"] || issue_data["Assignee"])["value"],
                 do: slack_link(YouTrack.base_url() <> "/users/#{username}", full_name)
 
           %{title: "Assignees", value: Enum.join(assignees, ","), short: true}
@@ -70,12 +70,12 @@ defmodule Hermetic.Attachment do
       footer: "YouTrack",
       footer_icon: YouTrack.logo_url(),
       text:
-        if Map.has_key?(issue_data, "description") do
-          cutoff(issue_data["description"]["value"], max_text_size())
+        if Map.has_key?(issue_data, "description") and not is_nil(issue_data["description"]) do
+          cutoff(issue_data["description"], max_text_size())
         end,
-      title: "[#{issue_id}] #{issue_data["summary"]["value"]}",
-      title_link: YouTrack.base_url() <> "/issue/" <> issue_id,
-      ts: String.to_integer(issue_data["created"]["value"]) / 1000
+      title: "[#{issue_data["idReadable"]}] #{issue_data["summary"]}",
+      title_link: YouTrack.base_url() <> "/issue/" <> issue_data["idReadable"],
+      ts: issue_data["created"] / 1000
     }
   end
 end

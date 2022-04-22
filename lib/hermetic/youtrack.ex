@@ -13,11 +13,21 @@ defmodule Hermetic.YouTrack do
   """
   def request(method, endpoint, params \\ []) do
     headers = [
-      {"authorization", "Bearer " <> token()},
-      {"accept", "application/json"}
+      {"Authorization", "Bearer " <> token()},
+      {"Accept", "application/json"}
     ]
 
     HTTPoison.request!(method, base_url() <> endpoint, "", headers, params: params)
+  end
+
+  def post(endpoint, fields, body) do
+    resp = HTTPoison.post!(base_url() <> "/api/" <> endpoint, Jason.encode!(Map.new(body)),
+      [{"Authorization", "Bearer " <> token()},
+       {"Content-Type", "application/json"}
+      ],
+      params: [fields: Enum.join(fields)]
+    )
+    Jason.decode!(resp.body)
   end
 
   @doc ~S"""
@@ -25,14 +35,12 @@ defmodule Hermetic.YouTrack do
   """
   @spec create_issue(String.t(), String.t(), String.t()) :: String.t()
   def create_issue(project, summary, description) do
-    resp =
-      request(:put, "/rest/issue",
-        project: String.upcase(project),
-        summary: summary,
-        description: description
-      )
-
-    Path.basename(Map.new(resp.headers)["Location"])
+    projectId = cached_project_ids()[String.upcase(project)]
+    post("issues", ["idReadable"], 
+      project: %{id: projectId},
+      summary: summary,
+      description: description
+    )["idReadable"]
   end
 
   @doc ~S"""
@@ -40,18 +48,10 @@ defmodule Hermetic.YouTrack do
   """
   @spec execute_command(String.t(), String.t(), String.t()) :: HTTPoison.Response.t()
   def execute_command(issue, command, sender) do
-    request(:post, "/rest/issue/#{issue}/execute",
-      command: command,
-      runAs: sender
-    )
-  end
-
-  @doc ~S"""
-  Return URL to YouTrack avatar for the given username.
-  """
-  def avatar_url(username) do
-    resp = request(:get, "/api/admin/users/#{username}", fields: "avatarUrl")
-    base_url() <> Jason.decode!(resp.body)["avatarUrl"]
+    post("commands", ["entityID"],
+      query: command,
+      runAs: sender,
+      issues: [%{idReadable: issue}])
   end
 
   @doc ~S"""
@@ -67,14 +67,14 @@ defmodule Hermetic.YouTrack do
     @doc ~S"""
     Fetch list of all available YouTrack project IDs.
     """
-    @spec refresh :: list(String.t())
+    @spec refresh :: %{String.t() => String.t()}
     def refresh do
-      projects = Jason.decode!(YouTrack.request(:get, "/rest/project/all").body)
-      for %{"shortName" => id} <- projects, do: id
+      projects = Jason.decode!(YouTrack.request(:get, "/api/admin/projects", fields: "shortName,id").body)
+      for %{"shortName" => shortName, "id" => id} <- projects, into: %{}, do: {shortName, id}
     end
   end
 
-  @spec cached_project_ids :: list(String.t())
+  @spec cached_project_ids :: %{String.t() =>String.t()}
   def cached_project_ids do
     ProjectID.retrieve(ProjectID)
   end
@@ -87,16 +87,9 @@ defmodule Hermetic.YouTrack do
     @spec refresh :: %{String.t() => String.t()}
     def refresh do
       for %{"login" => login, "profile" => %{"email" => %{"email" => email}}} <-
-            Jason.decode!(
-              YouTrack.request(
-                :get,
-                "/hub/rest/users?" <>
-                  URI.encode_query(
-                    "$top": @max_int32,
-                    fields: "login,profile/email/email"
-                  )
-              ).body
-            )["users"],
+        (YouTrack.request(:get,
+          "/hub/api/rest/users", "$top": @max_int32, fields: "login,profile/email/email"
+        ).body |> Jason.decode!())["users"],
           into: %{},
           do: {email, login}
     end
@@ -111,10 +104,14 @@ defmodule Hermetic.YouTrack do
   Fetch YouTrack data for an issue, given its ID.
   """
   def issue_data(issue_id) do
-    data = Jason.decode!(request(:get, "/rest/issue/#{issue_id}").body)
+    data = Jason.decode!(request(:get, "/api/issues/#{issue_id}", fields: Enum.join([
+              "summary", "description", "idReadable", "reporter(login,avatarUrl,fullName)",
+              "created",
+              "customFields(name,value(name,login,fullName,color(background)))"
+            ], ",")).body)
 
-    if fields = Map.get(data, "field") do
-      for field = %{"name" => name} <- fields, into: %{}, do: {name, field}
+    if fields = Map.get(data, "customFields") do
+      for field = %{"name" => name} <- fields, into: data, do: {name, field}
     end
   end
 end

@@ -45,7 +45,7 @@ defmodule Hermetic.EventAPI do
   """
   @spec extract_issue_ids(String.t()) :: [String.t()]
   def extract_issue_ids(text) do
-    project_ids = YouTrack.cached_project_ids() |> enum_to_regex_group()
+    project_ids = YouTrack.cached_project_ids() |> Map.keys() |> enum_to_regex_group()
 
     ~r/#{project_ids}-[1-9][0-9]{0,3}/
     |> Regex.scan(text, capture: :first)

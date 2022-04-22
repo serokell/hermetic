@@ -43,7 +43,7 @@ defmodule Hermetic.Slash do
   """
   @spec translate_user_id(String.t()) :: String.t()
   def translate_user_id(slack_id) do
-    YouTrack.cached_emails_to_logins()[Slack.user_profile(slack_id)["email"]]
+    YouTrack.cached_emails_to_logins() |> Map.fetch!(Slack.user_profile(slack_id)["email"])
   end
 
   @doc ~S"""
