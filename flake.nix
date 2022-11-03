@@ -6,8 +6,10 @@
     flake = false;
   };
 
-  inputs.gitignore.url = "github:hercules-ci/gitignore";
-  inputs.gitignore.flake = false;
+  inputs.gitignore = {
+    url = "github:hercules-ci/gitignore.nix";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
 
   inputs.mix-to-nix.url = "github:serokell/mix-to-nix/transumption";
   inputs.mix-to-nix.flake = false;
@@ -21,7 +23,7 @@
       pkgs = import nixpkgs { inherit system; };
 
       mixToNix = (pkgs.callPackage mix-to-nix { }).mixToNix;
-      gitignoreSource = (pkgs.callPackage gitignore { }).gitignoreSource;
+      inherit (gitignore.lib) gitignoreSource;
     in
     {
       defaultPackage = pkgs.callPackage ./derivation.nix { inherit mixToNix gitignoreSource; };
