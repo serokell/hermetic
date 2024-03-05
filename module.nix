@@ -1,13 +1,14 @@
-# SPDX-FileCopyrightText: 2020 Serokell <https://serokell.io/>
+# SPDX-FileCopyrightText: 2020-2024 Serokell <https://serokell.io/>
 #
 # SPDX-License-Identifier: MPL-2.0
-
+{ serokell-nix }:
 { config, lib, pkgs, ... }:
 
 with lib;
 
 let
   cfg = config.services.hermetic;
+  inherit (serokell-nix.lib.systemd) hardeningProfiles withHardeningProfile;
 in
 
 {
@@ -71,12 +72,29 @@ in
         ${cfg.package}/bin/hermetic start
       '';
 
-      serviceConfig = {
+      serviceConfig = withHardeningProfile hardeningProfiles.backend {
         EnvironmentFile = optional (cfg.environmentFile != null) cfg.environmentFile;
         DynamicUser = true;
         WorkingDirectory = cfg.package;
         Restart = "on-failure";
         RestartSec = "1min";
+
+        SystemCallFilter = [
+          "~@clock"
+          "~@debug"
+          "~@module"
+          "~@mount"
+          "~@raw-io"
+          "~@reboot"
+          "~@swap"
+          "~@privileged"
+          "~@resources"
+          "~@cpu-emulation"
+          "~@obsolete"
+
+          # override hardening profile
+          "@chown"
+        ];
       };
     };
   };

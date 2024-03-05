@@ -16,8 +16,10 @@
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
-  outputs = { self, nixpkgs, gitignore, mix-to-nix, flake-utils, ... }: ({
-    nixosModules.hermetic = import ./module.nix;
+  inputs.serokell-nix.url = "github:serokell/serokell.nix";
+
+  outputs = { self, nixpkgs, gitignore, mix-to-nix, flake-utils, serokell-nix, ... }: ({
+    nixosModules.hermetic = import ./module.nix { inherit serokell-nix; };
   } // flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; };
